@@ -7,6 +7,8 @@ import {
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
 function GalleryContent() {
     const searchParams = useSearchParams();
     const filterParam = searchParams.get('filter');
@@ -26,7 +28,7 @@ function GalleryContent() {
     }, []);
 
     useEffect(() => {
-        fetch('http://localhost:5000/api/projects')
+        fetch(`${API_URL}/api/projects`)
             .then(res => res.json())
             .then(data => {
                 setProjects(data);
@@ -98,7 +100,7 @@ function GalleryContent() {
 
         try {
             // 2. Call the backend API
-            const res = await fetch(`http://localhost:5000/api/projects/${id}`, {
+            const res = await fetch(`${API_URL}/api/projects/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}` // <--- ADD TOKEN
@@ -214,7 +216,7 @@ function GalleryContent() {
                                 <div className="relative aspect-[16/10] overflow-hidden cursor-pointer">
                                     {project.cover_image ? (
                                         <img
-                                            src={`http://localhost:5000/uploads/thumb_${project.cover_image}`}
+                                            src={`${API_URL}/uploads/thumb_${project.cover_image}`}
                                             alt={project.name}
                                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                         />

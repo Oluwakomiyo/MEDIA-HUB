@@ -4,13 +4,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Play, Pause, X, ChevronLeft, ChevronRight, Maximize, Minimize,
-  Settings, Zap, Clock, Image as ImageIcon, Info
+  Settings, Zap, Clock, Image as ImageIcon, Info, Star, LayoutGrid, Award, ShieldCheck,
+  Presentation
 } from 'lucide-react';
 import Link from 'next/link';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
 export default function SlideshowPage() {
   return (
-    <Suspense fallback={<div className="h-screen bg-black flex items-center justify-center text-white font-bold uppercase tracking-widest animate-pulse">Initializing Engine...</div>}>
+    <Suspense fallback={<div className="h-screen bg-slate-950 flex items-center justify-center text-white">Initializing Engine...</div>}>
       <SlideshowContent />
     </Suspense>
   );
@@ -19,15 +22,22 @@ export default function SlideshowPage() {
 function SlideshowContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Check if we are currently playing a slideshow
+  const isPlayingParam = searchParams.get('play') === 'true';
+  const categoryParam = searchParams.get('category') || 'All';
+  const featuredParam = searchParams.get('featured') === 'true';
   const projectIdFilter = searchParams.get('projectId');
+
   const [images, setImages] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [isFocusMode, setIsFocusMode] = useState(false);
   const [showUI, setShowUI] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Settings State
+  // Settings
   const [effect, setEffect] = useState('zoom');
   const [duration, setDuration] = useState(6);
   const [showInfo, setShowInfo] = useState(true);
@@ -35,6 +45,63 @@ function SlideshowContent() {
 
   const slideshowRef = useRef(null);
   const uiTimeout = useRef(null);
+
+  const categories = ['Residential', 'Commercial', 'Industrial', 'Healthcare', 'Infrastructure', 'Premium', 'Landmark', 'Recently Completed', 'Award Winning'];
+
+  // 1. Fetch Data based on Selection
+  useEffect(() => {
+    if (!isPlayingParam && !projectIdFilter) return;
+
+    setLoading(true);
+    setImages([]);
+    setCurrentIndex(0);
+
+    let url = `${API_URL}/api/slideshow`;
+    if (projectIdFilter) {
+      url = `${API_URL}/api/projects/${projectIdFilter}`;
+    } else if (featuredParam) {
+      url += `?featured=true`;
+    } else if (categoryParam !== 'All') {
+      url += `?category=${encodeURIComponent(categoryParam)}`;
+    }
+
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        const final = projectIdFilter ? data.images : data;
+
+        const formatted = (final || []).map(img => ({
+          ...img,
+          project_id: data.id || img.project_id,
+          project_name: data.name || img.project_name,
+          category: data.category || img.category,
+          location: data.location || img.location,
+        }));
+
+        setImages(formatted);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setImages([]);
+        setLoading(false);
+      });
+  }, [isPlayingParam, categoryParam, featuredParam, projectIdFilter]);
+
+  // 2. Playback Timer
+  useEffect(() => {
+    if (!isAutoPlaying || images.length === 0 || !isPlayingParam) return;
+
+    const id = setInterval(() => {
+      setCurrentIndex(prev =>
+        isRandom
+          ? Math.floor(Math.random() * images.length)
+          : (prev + 1) % images.length
+      );
+    }, Number(duration) * 1000);
+
+    return () => clearInterval(id);
+  }, [isAutoPlaying, images, duration, isRandom, isPlayingParam]);
 
   const handleExit = () => {
     if (projectIdFilter) {
@@ -44,52 +111,22 @@ function SlideshowContent() {
     }
   };
 
-  useEffect(() => {
-    const url = projectIdFilter
-      ? `http://localhost:5000/api/projects/${projectIdFilter}`
-      : `http://localhost:5000/api/slideshow`;
-
-    fetch(url)
-      .then(res => res.json())
-      .then(data => {
-        const finalImages = projectIdFilter ? data.images : data;
-        if (finalImages && finalImages.length > 0) {
-          const formatted = finalImages.map(img => ({
-            ...img,
-            project_id: data.id || img.project_id,
-            project_name: data.name || img.project_name,
-            category: data.category || img.category,
-            location: data.location || img.location
-          }));
-          setImages(formatted);
-        }
-      });
-  }, [projectIdFilter]);
-
   // 1. ADD THIS: Listener to detect Esc key / Browser Fullscreen exit
   useEffect(() => {
-    const handleFullscreenChange = () => {
-      // If document.fullscreenElement is null, it means we exited fullscreen
-      if (!document.fullscreenElement) {
-        setIsFocusMode(false);
-      }
+    const handler = () => {
+      setIsFocusMode(!!document.fullscreenElement);
     };
 
-    // Add the event listener to the document
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-
-    // Cleanup: remove the listener when the component is destroyed
-    return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-    };
+    document.addEventListener("fullscreenchange", handler);
+    return () => document.removeEventListener("fullscreenchange", handler);
   }, []);
 
   // 2. UPDATE: Simplify your toggle function (Optional but cleaner)
   const toggleFocusMode = () => {
     if (!document.fullscreenElement) {
-      slideshowRef.current.requestFullscreen().catch(err => {
-        console.error(`Error: ${err.message}`);
-      });
+      if (slideshowRef.current?.requestFullscreen) {
+        slideshowRef.current.requestFullscreen().catch(console.error);
+      }
       // We don't strictly need setIsFocusMode(true) here 
       // because the listener above will catch the change automatically!
       setIsFocusMode(true);
@@ -99,134 +136,128 @@ function SlideshowContent() {
     }
   };
 
-  // Improved Mouse Logic for Focus Mode
   const handleMouseMove = () => {
     setShowUI(true);
     if (uiTimeout.current) clearTimeout(uiTimeout.current);
-
-    // If Focus Mode is ON and Settings are CLOSED, auto-hide UI after 3s
-    if (isFocusMode && !showSettings) {
-      uiTimeout.current = setTimeout(() => setShowUI(false), 3000);
-    }
-  };
-
-  useEffect(() => {
-    let interval;
-    if (isPlaying && images.length > 0) {
-      interval = setInterval(() => {
-        nextSlide();
-      }, duration * 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isPlaying, images, duration, isRandom]);
-
-  const nextSlide = () => {
-    if (isRandom) {
-      setCurrentIndex(Math.floor(Math.random() * images.length));
-    } else {
-      setCurrentIndex((prev) => (prev + 1) % images.length);
-    }
-  };
-
-  const prevSlide = () => {
-    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+    if (isFocusMode && !showSettings) uiTimeout.current = setTimeout(() => setShowUI(false), 3000);
   };
 
   const variants = {
     zoom: { initial: { opacity: 0, scale: 1.2 }, animate: { opacity: 1, scale: 1 }, exit: { opacity: 0 }, transition: { duration: 1.5 } },
     fade: { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 }, transition: { duration: 1 } },
-    slide: { initial: { x: '100%' }, animate: { x: 0 }, exit: { x: '-100%' }, transition: { duration: 0.8, ease: "easeInOut" } }
+    slide: { initial: { x: '100%' }, animate: { x: 0 }, exit: { x: '-100%' }, transition: { duration: 0.8 } }
   };
 
-  if (images.length === 0) return <div className="h-screen bg-black" />;
+  // --- RENDER MODE A: THE SELECTION DASHBOARD ---
+  if (!isPlayingParam && !projectIdFilter) {
+    return (
+      <div className="min-h-screen bg-slate-50 p-8 md:p-12">
+        <div className="max-w-6xl mx-auto">
+          <header className="mb-12">
+            <h1 className="text-2xl font-bold text-slate-900">Presentation Portal</h1>
+            <p className="text-slate-500 text-lg">Select a curated playlist to launch the cinematic kiosk.</p>
+          </header>
 
-  const currentImg = images[currentIndex];
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Option 1: All Projects */}
+            <PresentationCard
+              title="Master Exhibition"
+              desc="Cycle through every visual asset in the firm's repository."
+              icon={<LayoutGrid size={32} />}
+              color="bg-blue-600"
+              onClick={() => router.push('/slideshow?play=true&category=All')}
+            />
+
+            {/* Option 2: Featured Showcase */}
+            <PresentationCard
+              title="Featured Showcase"
+              desc="Highlight only the firm's top-tier, starred projects."
+              icon={<Star size={32} fill="white" />}
+              color="bg-amber-500"
+              onClick={() => router.push('/slideshow?play=true&featured=true')}
+            />
+
+            {/* Option 3: Curated Building Types */}
+            <div className="lg:col-span-3 mt-10">
+              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">Building Types & Categories</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {categories.map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => router.push(`/slideshow?play=true&category=${cat}`)}
+                    className="p-6 bg-white border border-slate-200 rounded-3xl hover:shadow-xl hover:-translate-y-1 transition-all text-left group"
+                  >
+                    <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center mb-4 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                      <ImageIcon size={20} />
+                    </div>
+                    <p className="font-bold text-slate-900 text-sm leading-tight">{cat}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- RENDER MODE B: THE CINEMATIC PLAYER ---
+  if (loading) {
+    return (
+      <div className="h-[90vh] rounded-[1rem] bg-slate-950 flex flex-col items-center justify-center text-white">
+        <p className="animate-pulse font-black uppercase tracking-widest"> Compiling Assets... </p>
+        <button onClick={() => router.push("/slideshow")}
+          className="mt-8 text-xs text-blue-400 underline" > Cancel and return
+        </button>
+      </div>
+    );
+  }
+  if (images.length === 0) {
+    return (
+      <div className="h-[90vh] rounded-[1rem] bg-slate-950 flex flex-col items-center justify-center text-white">
+        <h2 className="text-2xl font-bold mb-2">No Images Found</h2>
+        <p className="text-slate-400 mb-8"> This category doesn't contain any slideshow images yet. </p>
+        <button onClick={() => router.push("/slideshow")} className="px-6 py-3 bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors" > Return to Presentation Portal </button>
+      </div>);
+  }
+
+  const currentImg = images?.[currentIndex];
+  if (!currentImg) return null;
 
   return (
-    <div
-      ref={slideshowRef}
-      onMouseMove={handleMouseMove}
-      className={`relative overflow-hidden bg-black
+    <div ref={slideshowRef} onMouseMove={handleMouseMove} className={`relative overflow-hidden bg-black
         ${isFocusMode
-          ? 'h-screen w-full rounded-none'
-          : 'h-[90vh] w-full max-w-7xl rounded-[1rem] shadow-[0_40px_100px_rgba(0,0,0,0.7)] border border-white/5'
-        }
-        ${isFocusMode && !showUI ? 'cursor-none' : 'cursor-default'}
-      `}
-    >
-      {/* 1. IMAGE LAYER */}
+        ? 'h-screen w-full rounded-none'
+        : 'h-[90vh] w-full max-w-7xl rounded-[1rem] shadow-[0_40px_100px_rgba(0,0,0,0.7)] border border-white/5'
+      } ${isFocusMode && !showUI ? 'cursor-none' : 'cursor-default'}`}>
       <AnimatePresence mode="wait">
-        <motion.div
-          key={`${effect}-${currentIndex}`}
-          className="absolute inset-0"
-          {...variants[effect]}
-        >
-          <img
-            src={`http://localhost:5000/uploads/${currentImg.file_path}`}
-            alt={currentImg.project_name}
-            className="w-full h-full object-cover"
-          />
+        <motion.div key={`${effect}-${currentIndex}`} className="absolute inset-0" {...variants[effect]}>
+          <img src={`${API_URL}/uploads/${currentImg.file_path}`} alt={currentImg.project_name} className="w-full h-full object-cover" />
         </motion.div>
       </AnimatePresence>
 
-      {/* 2. CINEMATIC OVERLAYS (Vignette & Gradient) */}
       <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_150px_rgba(0,0,0,0.85)] z-20" />
-      {/* UPDATED: Gradient now stays if showInfo is ON, even if showUI is OFF */}
-      <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-transparent transition-opacity duration-1000 pointer-events-none z-10 
-  ${showInfo ? 'opacity-100' : 'opacity-0'}`}
-      />
+      <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-transparent transition-opacity duration-1000 pointer-events-none z-10 ${showInfo ? 'opacity-100' : 'opacity-0'}`} />
 
-      {/* 3. INTERACTIVE UI ELEMENTS */}
       <AnimatePresence>
         {showUI && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="z-[60] absolute inset-0 pointer-events-none">
-
-            {/* Top Bar (Exit & Settings) */}
             <div className="absolute top-8 left-8 right-8 flex justify-between items-center z-[100] pointer-events-auto">
-              <button
-                onClick={handleExit}
-                className="bg-white/10 backdrop-blur-md p-3 rounded-full hover:bg-red-600 text-white transition-all shadow-2xl border border-white/10"
-              >
-                <X size={24} />
-              </button>
+              <button onClick={() => router.push('/slideshow')} className="bg-white/10 backdrop-blur-md p-3 rounded-full hover:bg-red-600 text-white transition-all shadow-2xl border border-white/10"><X size={24} /></button>
               <div className="flex gap-4">
-                <button onClick={() => setShowSettings(!showSettings)} className="bg-white/10 backdrop-blur-md p-3 rounded-full text-white hover:bg-blue-600 transition-all">
-                  <Settings size={20} className={showSettings ? 'rotate-90' : ''} />
-                </button>
+                <button onClick={() => setShowSettings(!showSettings)} className="bg-white/10 backdrop-blur-md p-3 rounded-full text-white hover:bg-blue-600 transition-all"><Settings size={20} className={showSettings ? 'rotate-90' : ''} /></button>
                 <button onClick={toggleFocusMode} className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full text-white text-xs font-bold hover:bg-white/20 transition-all border border-white/10">
                   {isFocusMode ? <Minimize size={18} /> : <Maximize size={18} />}
-                  {isFocusMode ? "EXIT FOCUS" : "FOCUS MODE"}
-                </button>
+                  {isFocusMode ? "EXIT FOCUS" : "FOCUS MODE"}</button>
               </div>
             </div>
-
-            {/* Navigation Arrows */}
-            <div className="absolute inset-y-0 left-0 flex items-center px-6 z-[70] pointer-events-auto">
-              <button onClick={prevSlide} className="text-white/30 hover:text-white transition-colors bg-black/10 hover:bg-black/30 p-4 rounded-full backdrop-blur-sm">
-                <ChevronLeft size={48} />
-              </button>
-            </div>
-            <div className="absolute inset-y-0 right-0 flex items-center px-6 z-[70] pointer-events-auto">
-              <button onClick={nextSlide} className="text-white/30 hover:text-white transition-colors bg-black/10 hover:bg-black/30 p-4 rounded-full backdrop-blur-sm">
-                <ChevronRight size={48} />
-              </button>
-            </div>
-
-            {/* Play/Pause Button */}
-            <div className="absolute bottom-12 right-12 z-[80] pointer-events-auto">
-              <button
-                onClick={() => setIsPlaying(!isPlaying)}
-                className="w-16 h-16 bg-white text-black rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-all"
-              >
-                {isPlaying ? <Pause size={28} fill="black" /> : <Play size={28} fill="black" className="ml-1" />}
-              </button>
-            </div>
+            <div className="absolute inset-y-0 left-0 flex items-center px-6 z-[70] pointer-events-auto"><button onClick={() => setCurrentIndex((currentIndex - 1 + images.length) % images.length)} className="text-white/30 hover:text-white p-4 rounded-full backdrop-blur-sm transition-all"><ChevronLeft size={48} /></button></div>
+            <div className="absolute inset-y-0 right-0 flex items-center px-6 z-[70] pointer-events-auto"><button onClick={() => setCurrentIndex((currentIndex + 1) % images.length)} className="text-white/30 hover:text-white p-4 rounded-full backdrop-blur-sm transition-all"><ChevronRight size={48} /></button></div>
+            <div className="absolute bottom-12 right-12 z-[80] pointer-events-auto"><button onClick={() => setIsAutoPlaying(!isAutoPlaying)} className="w-16 h-16 bg-white text-black rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-all">{isAutoPlaying ? <Pause size={28} fill="black" /> : <Play size={28} fill="black" className="ml-1" />}</button></div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* 4. PROJECT INFO PANEL (Separated for Focus Mode Stability) */}
-      {/* 4. PROJECT INFO PANEL - Uncoupled from showUI */}
       <AnimatePresence>
         {showInfo && ( // Removed "showUI &&"
           <div className="absolute bottom-12 left-12 text-white z-[99] pointer-events-auto"
@@ -251,16 +282,6 @@ function SlideshowContent() {
         )}
       </AnimatePresence>
 
-      {/* 5. PROGRESS BAR */}
-      <div className="absolute bottom-0 left-0 w-full h-1 bg-white/10 overflow-hidden z-[90]">
-        <motion.div
-          key={currentIndex} initial={{ width: 0 }} animate={{ width: "100%" }}
-          transition={{ duration: duration, ease: "linear" }}
-          className="h-full bg-blue-600"
-        />
-      </div>
-
-      {/* 6. SETTINGS SIDEBAR */}
       <AnimatePresence>
         {showSettings && (
           <motion.div
@@ -281,30 +302,76 @@ function SlideshowContent() {
               </section>
               <section>
                 <label className="text-xs font-bold text-slate-500 uppercase block mb-4 tracking-widest">Speed ({duration}s)</label>
-                <input type="range" min="2" max="20" value={duration} onChange={(e) => setDuration(e.target.value)} className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+                <input type="range" min="2" max="20" value={duration} onChange={(e) => setDuration(Number(e.target.value))} className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600" />
               </section>
               <section className="space-y-4">
-                <Toggle label="Show Project Info" active={showInfo} onClick={() => setShowInfo(!showInfo)} icon={<Info size={16} />} />
-                <Toggle label="Shuffle Gallery" active={isRandom} onClick={() => setIsRandom(!isRandom)} icon={<ImageIcon size={16} />} />
+                <PresentationCard variant="toggle" label="Show Project Info" active={showInfo} onClick={() => setShowInfo(!showInfo)} icon={<Info size={16} />} />
+                <PresentationCard variant="toggle" label="Shuffle Gallery" active={isRandom} onClick={() => setIsRandom(!isRandom)} icon={<ImageIcon size={16} />} />
               </section>
             </div>
             <button onClick={() => setShowSettings(false)} className="mt-12 w-full bg-blue-600 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-blue-700 shadow-xl shadow-blue-900/20 transition-all">Apply Settings</button>
           </motion.div>
         )}
       </AnimatePresence>
+
+      <div className="absolute bottom-0 left-0 w-full h-1 bg-white/10 overflow-hidden z-[90]"><motion.div key={currentIndex} initial={{ width: 0 }} animate={{ width: "100%" }} transition={{ duration: duration, ease: "linear" }} className="h-full bg-blue-600" /></div>
     </div>
   );
 }
 
-function Toggle({ label, active, onClick, icon }) {
+function PresentationCard({
+  variant = "card",
+  title,
+  desc,
+  icon,
+  color,
+  onClick,
+  label,
+  active,
+}) {
+  if (variant === "toggle") {
+    return (
+      <div
+        className="flex items-center justify-between group cursor-pointer"
+        onClick={onClick}
+      >
+        <div className="flex items-center gap-3 text-slate-400 group-hover:text-white transition-colors">
+          {icon}
+          <span className="text-xs font-bold uppercase tracking-wider">
+            {label}
+          </span>
+        </div>
+
+        <div
+          className={`w-10 h-5 rounded-full relative transition-colors ${active ? "bg-blue-600" : "bg-slate-700"
+            }`}
+        >
+          <div
+            className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${active ? "right-1" : "left-1"
+              }`}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex items-center justify-between group cursor-pointer" onClick={onClick}>
-      <div className="flex items-center gap-3 text-slate-400 group-hover:text-white transition-colors">
-        {icon} <span className="text-xs font-bold uppercase tracking-wider">{label}</span>
+    <button
+      onClick={onClick}
+      className="relative group overflow-hidden bg-white p-10 rounded-[3rem] border border-slate-200 text-left hover:shadow-2xl hover:-translate-y-2 transition-all duration-500"
+    >
+      <div
+        className={`w-16 h-16 ${color} text-white rounded-[1.5rem] flex items-center justify-center mb-8 shadow-xl group-hover:scale-110 transition-transform`}
+      >
+        {icon}
       </div>
-      <div className={`w-10 h-5 rounded-full relative transition-colors ${active ? 'bg-blue-600' : 'bg-slate-700'}`}>
-        <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${active ? 'right-1' : 'left-1'}`} />
+
+      <h2 className="text-2xl font-extrabold font-black text-slate-900 mb-2">{title}</h2>
+      <p className="text-slate-500 font-medium leading-relaxed">{desc}</p>
+
+      <div className="mt-8 flex items-center gap-2 text-blue-600 font-bold text-sm tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-opacity">
+        Launch Presentation <ChevronRight size={16} />
       </div>
-    </div>
+    </button>
   );
 }

@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Lock, User, ArrowRight } from 'lucide-react';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
 export default function Login() {
     const [form, setForm] = useState({ username: '', password: '' });
     const [error, setError] = useState("");
@@ -13,7 +15,7 @@ export default function Login() {
         setError(""); // Clear previous errors
 
         try {
-            const res = await fetch('http://localhost:5000/api/auth/login', {
+            const res = await fetch(`${API_URL}/api/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(form)
@@ -37,7 +39,7 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 rounded-2xl">
+        <div className="h-[90vh] bg-slate-950 flex items-center justify-center p-6 rounded-2xl">
             <div className="w-full max-w-md bg-slate-900 rounded-[1.5rem] border border-slate-800 p-10 shadow-2xl">
                 <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mb-8 mx-auto shadow-lg shadow-blue-900/20">
                     <Lock className="text-white" size={28} />

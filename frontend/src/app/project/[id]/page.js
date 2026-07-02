@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
 export default function ProjectDetails() {
     const { id } = useParams();
     const router = useRouter();
@@ -40,7 +42,7 @@ export default function ProjectDetails() {
 
         const fetchProject = async () => {
             try {
-                const res = await fetch(`http://localhost:5000/api/projects/${id}`);
+                const res = await fetch(`${API_URL}/api/projects/${id}`);
                 const data = await res.json();
                 setProject(data);
 
@@ -100,7 +102,7 @@ export default function ProjectDetails() {
         };
 
         try {
-            const res = await fetch(`http://localhost:5000/api/projects/${id}`, {
+            const res = await fetch(`${API_URL}/api/projects/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -134,14 +136,14 @@ export default function ProjectDetails() {
         for (let f of newFiles) fd.append('images', f);
 
         try {
-            const res = await fetch(`http://localhost:5000/api/projects/${id}/upload`, {
+            const res = await fetch(`${API_URL}/api/projects/${id}/upload`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }, // Token required here too
                 body: fd
             });
 
             if (res.ok) {
-                const refresh = await fetch(`http://localhost:5000/api/projects/${id}`);
+                const refresh = await fetch(`${API_URL}/api/projects/${id}`);
                 setProject(await refresh.json());
                 setNewFiles([]);
                 setShowUpload(false);
@@ -167,7 +169,7 @@ export default function ProjectDetails() {
         }
 
         try {
-            const res = await fetch(`http://localhost:5000/api/images/${imageId}`, {
+            const res = await fetch(`${API_URL}/api/images/${imageId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` } // FIXED: Added missing header
             });
@@ -287,7 +289,7 @@ export default function ProjectDetails() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {project.images?.map(img => (
                             <div key={img.id} onClick={() => setSelectedImage(img.file_path)} className="group h-40 bg-white rounded-xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition-all relative">
-                                <img src={`http://localhost:5000/uploads/thumb_${img.file_path}`} className="w-full h-full object-cover group-hover:scale-110 transition-all duration-1000" />
+                                <img src={`${API_URL}/uploads/thumb_${img.file_path}`} className="w-full h-full object-cover group-hover:scale-110 transition-all duration-1000" />
                                 {isAdmin && (
                                     <button onClick={(e) => deleteImage(e, img.id)} className="absolute top-3 right-3 z-30 p-2 bg-red-600 text-white rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-300 transform hover:scale-110"><Trash2 size={18} /></button>
                                 )}
@@ -413,7 +415,7 @@ export default function ProjectDetails() {
                     {selectedImage && (
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[2000] bg-slate-900/95 backdrop-blur-md flex items-center justify-center p-12" onClick={() => setSelectedImage(null)}>
                             <button className="absolute top-8 right-8 text-white bg-white/10 p-4 rounded-full hover:bg-red-500 transition-all"><X size={32} /></button>
-                            <motion.img initial={{ scale: 0.9 }} animate={{ scale: 1 }} src={`http://localhost:5000/uploads/${selectedImage}`} className="max-w-full max-h-full rounded-2xl shadow-2xl object-contain" onClick={e => e.stopPropagation()} />
+                            <motion.img initial={{ scale: 0.9 }} animate={{ scale: 1 }} src={`${API_URL}/uploads/${selectedImage}`} className="max-w-full max-h-full rounded-2xl shadow-2xl object-contain" onClick={e => e.stopPropagation()} />
                         </motion.div>
                     )}
                 </AnimatePresence>

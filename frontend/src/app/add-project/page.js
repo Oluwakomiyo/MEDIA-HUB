@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
 export default function AddProject() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
@@ -89,8 +91,8 @@ export default function AddProject() {
             tags: tagList.join(", ")
         };
 
-        try {
-            const res = await fetch('http://localhost:5000/api/projects', {
+        try {            
+            const res = await fetch(`${API_URL}/api/projects`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -108,8 +110,7 @@ export default function AddProject() {
                     imageFormData.append('images', selectedFiles[i].file);
                 }
 
-                const uploadRes = await fetch(
-                    `http://localhost:5000/api/projects/${data.id}/upload`,
+                const uploadRes = await fetch(`${API_URL}/projects/${data.id}/upload`,
                     {
                         method: 'POST',
                         headers: { 'Authorization': `Bearer ${token}` }, // Add Header

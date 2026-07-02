@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import { Database, Image as ImageIcon, Folders, Star, Clock, Plus, ArrowRight, MapPin } from 'lucide-react';
 import Link from 'next/link';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
 export default function Home() {
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -31,7 +33,7 @@ export default function Home() {
     // Optional: If not logged in, you could redirect them to the gallery
     // if (!token) { router.push('/gallery'); return; }
 
-    fetch('http://localhost:5000/api/stats', {
+    fetch(`${API_URL}/api/stats`, {
       headers: { 'Authorization': `Bearer ${token}` } // Send token to backend
     })
       .then(res => res.json())
@@ -146,12 +148,12 @@ export default function Home() {
                 <div className="relative aspect-[16/10] overflow-hidden cursor-pointer">
                   {project.thumbnail ? (
                     <img
-                      src={`http://localhost:5000/uploads/thumb_${project.thumbnail}`}
+                      src={`${API_URL}/uploads/thumb_${project.thumbnail}`}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       alt={project.name}
                       onError={(e) => {
                         // If the thumbnail fails, try loading the original
-                        e.target.src = `http://localhost:5000/uploads/${project.thumbnail}`;
+                        e.target.src = `${API_URL}/uploads/${project.thumbnail}`;
                       }}
                     />
                   ) : (

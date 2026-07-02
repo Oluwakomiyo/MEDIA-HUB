@@ -11,7 +11,7 @@ const JWT_SECRET = 'your_company_secret_key_123'; // Keep this private
 const setupDatabase = require('./database');
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
@@ -373,17 +373,26 @@ FROM projects p
 
     // Route for the Slideshow: Gets all images from all projects
     app.get('/api/slideshow', async (req, res) => {
+        const { category, featured } = req.query;
         try {
-            // We JOIN images and projects to get both the file and the name
-            const images = await db.all(`
+            let query = `
             SELECT i.file_path, p.id as project_id, p.name as project_name, p.category, p.location
             FROM images i
             JOIN projects p ON i.project_id = p.id
-        `);
+        `;
+            let params = [];
+
+            if (featured === 'true') {
+                query += ` WHERE p.is_featured = 1`;
+            } else if (category && category !== 'All') {
+                query += ` WHERE p.category = ?`;
+                params.push(category);
+            }
+
+            query += ` ORDER BY i.id DESC`;
+            const images = await db.all(query, params);
             res.json(images);
-        } catch (err) {
-            res.status(500).json({ error: err.message });
-        }
+        } catch (err) { res.status(500).json({ error: err.message }); }
     });
 
     // --- DASHBOARD STATS API ---
@@ -442,8 +451,8 @@ FROM projects p
         res.send("Project Management API is running...");
     });
 
-    app.listen(PORT, () => {
-        console.log(`Server is running on http://localhost:${PORT}`);
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`Server is running on ${PORT}`);
     });
 
     app.use((err, req, res, next) => {
