@@ -91,7 +91,7 @@ export default function AddProject() {
             tags: tagList.join(", ")
         };
 
-        try {            
+        try {
             const res = await fetch(`${API_URL}/api/projects`, {
                 method: 'POST',
                 headers: {
@@ -110,7 +110,7 @@ export default function AddProject() {
                     imageFormData.append('images', selectedFiles[i].file);
                 }
 
-                const uploadRes = await fetch(`${API_URL}/projects/${data.id}/upload`,
+                const uploadRes = await fetch(`${API_URL}/api/projects/${data.id}/upload`,
                     {
                         method: 'POST',
                         headers: { 'Authorization': `Bearer ${token}` }, // Add Header
@@ -118,7 +118,14 @@ export default function AddProject() {
                     }
                 );
 
-                if (!uploadRes.ok) throw new Error('Image upload failed');
+                if (!uploadRes.ok) {
+                    const err = await uploadRes.json().catch(() => ({}));
+
+                    console.log("Upload status:", uploadRes.status);
+                    console.log("Upload error:", err);
+
+                    throw new Error(err.error || "Image upload failed");
+                }
             }
 
             setSuccess(true);
@@ -133,10 +140,10 @@ export default function AddProject() {
 
     if (success) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-white text-slate-900">
+            <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
                 <CheckCircle2 className="w-20 h-20 text-green-500 mb-4 animate-bounce" />
                 <h1 className="text-4xl font-black tracking-tighter">Project Published</h1>
-                <p className="text-slate-500 mt-2 text-lg">Opening project details...</p>
+                <p className="text-slate-500 dark:text-slate-400 mt-2 text-lg">Opening project details...</p>
             </div>
         );
     }
@@ -185,7 +192,7 @@ export default function AddProject() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 p-6 md:p-12 text-slate-900">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white p-6 md:p-12 text-slate-900">
             <div className="max-w-4xl mx-auto">
 
                 {/* HEADER */}
@@ -193,15 +200,15 @@ export default function AddProject() {
                     <Link href="/" className="flex items-center text-blue-600 mb-4 hover:underline font-bold text-xs uppercase tracking-widest">
                         <ArrowLeft size={16} className="mr-2" /> Back to Dashboard
                     </Link>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900">Create New Project</h1>
-                    <p className="text-slate-500 mt-1 text-base">Register project specifications and media assets.</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Create New Project</h1>
+                    <p className="text-slate-500 dark:text-slate-400 mt-1 text-base">Register project specifications and media assets.</p>
                 </header>
 
                 <form onSubmit={handleSubmit} className="space-y-8">
 
                     {/* SECTION 1: IDENTITY */}
-                    <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-200">
-                        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                    <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] shadow-sm border border-slate-200 dark:border-slate-800">
+                        <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                             <Info size={16} className="text-blue-500" /> Project Identity
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -222,8 +229,8 @@ export default function AddProject() {
                     </div>
 
                     {/* SECTION 2: STAKEHOLDERS */}
-                    <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-200">
-                        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                    <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] shadow-sm border border-slate-200 dark:border-slate-800">
+                        <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                             <Briefcase size={16} className="text-blue-500" /> Stakeholders & Value
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -260,8 +267,8 @@ export default function AddProject() {
                     </div>
 
                     {/* SECTION 3: LOGISTICS */}
-                    <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-200">
-                        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                    <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] shadow-sm border border-slate-200 dark:border-slate-800">
+                        <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                             <MapPin size={16} className="text-blue-500" /> Location & Schedule
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
@@ -283,13 +290,13 @@ export default function AddProject() {
                     </div>
 
                     {/* SECTION 4: MEDIA */}
-                    <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-200">
-                        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                    <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] shadow-sm border border-slate-200 dark:border-slate-800">
+                        <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                             <Upload size={16} className="text-blue-500" /> Media & Visibility
                         </h3>
                         <div
-                            className={`border-2 border-dashed rounded-3xl p-10 text-center transition-all hover:bg-slate-50 group mb-8
-    ${isDragging ? "border-blue-500 bg-blue-50" : "border-slate-200 hover:border-blue-300"}
+                            className={`border-2 border-dashed rounded-3xl p-10 text-center transition-all hover:bg-slate-50 dark:hover:bg-slate-800/40 group mb-8
+    ${isDragging ? "border-blue-500 bg-blue-50 dark:bg-blue-950/40" : "border-slate-200 dark:border-slate-700 hover:border-blue-300"}
   `}
                             onDragOver={(e) => {
                                 e.preventDefault();
@@ -315,17 +322,17 @@ export default function AddProject() {
                                 onChange={(e) => { handleFiles(e.target.files); e.target.value = ""; }}
                             />
                             <label htmlFor="file-upload" className="cursor-pointer">
-                                <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                                <div className="w-16 h-16 bg-blue-50 dark:bg-blue-950/40 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                                     <Upload className="text-blue-600" />
                                 </div>
-                                <p className="text-lg font-bold text-slate-700">Select Visual Assets</p>
-                                <p className="text-sm text-slate-400 mt-1">{selectedFiles?.length > 0 ? `${selectedFiles.length} files staged` : 'Drag or click to browse'}</p>
+                                <p className="text-lg font-bold text-slate-700 dark:text-slate-200">Select Visual Assets</p>
+                                <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">{selectedFiles?.length > 0 ? `${selectedFiles.length} files staged` : 'Drag or click to browse'}</p>
                             </label>
                         </div>
                         {selectedFiles.length > 0 && (
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 mb-8">
                                 {selectedFiles.map((item, index) => (
-                                    <div key={index} className="relative group rounded-2xl overflow-hidden border border-slate-200 bg-slate-50">
+                                    <div key={index} className="relative group rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 ">
 
                                         <img
                                             src={item.preview}
@@ -336,7 +343,7 @@ export default function AddProject() {
                                             className="w-full h-28 object-cover group-hover:scale-105 transition-transform duration-300"
                                         />
                                         <div className="p-2">
-                                            <p className="text-xs text-slate-600 truncate">
+                                            <p className="text-xs text-slate-600 dark:text-slate-300 truncate">
                                                 {item.file.name}
                                             </p>
                                         </div>
@@ -362,9 +369,9 @@ export default function AddProject() {
                                     is_featured: !prev.is_featured
                                 }))
                             }
-                            className={`w-full p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center ${formData?.is_featured
-                                ? "bg-amber-50 border-amber-500"
-                                : "bg-slate-50 border-transparent"
+                            className={`w-full mt-4 p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center ${formData?.is_featured
+                                ? "bg-amber-50 dark:bg-amber-950/30 border-amber-500"
+                                : "bg-slate-50 dark:bg-slate-800 border-transparent"
                                 }`}
                         >
                             <div className="w-full flex items-center justify-between ">
@@ -373,11 +380,11 @@ export default function AddProject() {
                                         size={20}
                                         fill={formData?.is_featured ? "#f59e0b" : "none"}
                                         className={
-                                            formData?.is_featured ? "text-amber-500" : "text-slate-400"
+                                            formData?.is_featured ? "text-amber-500" : "text-slate-400 dark:text-slate-500"
                                         }
                                     />
 
-                                    <span className="text-sm font-bold text-amber-900">
+                                    <span className="text-sm font-bold text-amber-900 dark:text-amber-300">
                                         Featured Status
                                     </span>
                                 </div>
@@ -386,7 +393,7 @@ export default function AddProject() {
 
                                 {/* toggle switch */}
                                 <div
-                                    className={`w-10 h-5 rounded-full relative transition-colors ${formData?.is_featured ? "bg-amber-500" : "bg-slate-300"
+                                    className={`w-10 h-5 rounded-full relative transition-colors ${formData?.is_featured ? "bg-amber-500" : "bg-slate-300 dark:bg-slate-700"
                                         }`}
                                 >
                                     <div
@@ -399,8 +406,8 @@ export default function AddProject() {
                     </div>
 
                     {/* SECTION 5: DISCOVERY TAGS */}
-                    <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-200">
-                        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Discovery Tags</h3>
+                    <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] shadow-sm border border-slate-200 dark:border-slate-600">
+                        <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6">Discovery Tags</h3>
                         <div className="space-y-4">
                             <input
                                 type="text"
@@ -412,7 +419,7 @@ export default function AddProject() {
                             />
                             <div className="flex flex-wrap gap-2">
                                 {tagList.map(tag => (
-                                    <span key={tag} className="flex items-center gap-2 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-full text-xs font-bold border border-blue-100">
+                                    <span key={tag} className="flex items-center gap-2 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-300 px-3 py-1.5 rounded-full text-xs font-bold border border-blue-100 dark:border-blue-800">
                                         #{tag}
                                         <button type="button" onClick={() => removeTag(tag)}><X size={12} /></button>
                                     </span>
@@ -424,29 +431,51 @@ export default function AddProject() {
                     <button
                         disabled={loading}
                         type="submit"
-                        className="w-full bg-blue-600 text-white py-5 rounded-3xl font-black text-lg hover:bg-blue-700 transition-all shadow-xl shadow-blue-200 disabled:bg-slate-300">
+                        className="w-full bg-blue-600 text-white py-5 rounded-3xl font-black text-lg hover:bg-blue-700 transition-all shadow-xl shadow-blue-200 dark:shadow-blue-950/50 disabled:bg-slate-300 dark:disabled:bg-slate-700">
                         {loading ? "Publishing to Hub..." : "Publish Project to Repository"}
                     </button>
                 </form>
             </div>
 
             <style jsx>{`
-        .form-input {
-          width: 100%;
-          padding: 1rem;
-          background-color: #f8fafc;
-          border: 1px solid #e2e8f0;
-          border-radius: 1rem;
-          font-weight: 600;
-          outline: none;
-          transition: all 0.2s;
-        }
-        .form-input:focus {
-          background-color: #fff;
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
-        }
-      `}</style>
+  .form-input {
+    width: 100%;
+    padding: 1rem;
+    background-color: #f8fafc;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+    border-radius: 1rem;
+    font-weight: 600;
+    outline: none;
+    transition: all 0.2s ease;
+  }
+
+  .form-input::placeholder {
+    color: #94a3b8;
+  }
+
+  .form-input:focus {
+    background-color: #ffffff;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  }
+
+  :global(.dark) .form-input {
+    background-color: #1e293b;
+    color: #ffffff;
+    border-color: #334155;
+  }
+
+  :global(.dark) .form-input::placeholder {
+    color: #64748b;
+  }
+
+  :global(.dark) .form-input:focus {
+    background-color: #0f172a;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  }
+`}</style>
         </div>
     );
 }
@@ -454,7 +483,7 @@ export default function AddProject() {
 function FormGroup({ label, children, icon }) {
     return (
         <div className="space-y-2">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
+            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-2">
                 {label}
             </label>
             {children}

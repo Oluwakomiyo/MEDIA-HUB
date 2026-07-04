@@ -420,7 +420,7 @@ FROM projects p
             const highlights = await db.all(`
             SELECT p.id, p.name, p.category, p.location,
             (SELECT file_path FROM images WHERE project_id = p.id ORDER BY id ASC LIMIT 1) as thumbnail
-            FROM projects p ORDER BY p.id DESC LIMIT 3
+            FROM projects p ORDER BY p.id DESC LIMIT 4
         `);
 
             // Convert bytes to Megabytes for display
@@ -433,13 +433,21 @@ FROM projects p
             ORDER BY id DESC LIMIT 8
         `);
 
+            const categoryStats = await db.all(`
+            SELECT category as name, COUNT(*) as count 
+            FROM projects 
+            GROUP BY category
+            ORDER BY count DESC
+        `);
+
             res.json({
                 projects: projectCount.count,
                 assets: assetCount.count,
                 featured: featuredCount.count,
                 storage: `${storageMB} MB`,
                 activity: recentActivity,
-                highlights: highlights
+                highlights: highlights,
+                categoryData: categoryStats
             });
         } catch (err) {
             res.status(500).json({ error: err.message });

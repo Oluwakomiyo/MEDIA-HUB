@@ -1,6 +1,7 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from "next-themes";
 import { Lock, User, ArrowRight } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -9,6 +10,11 @@ export default function Login() {
     const [form, setForm] = useState({ username: '', password: '' });
     const [error, setError] = useState("");
     const router = useRouter();
+    const { setTheme } = useTheme();
+
+    useEffect(() => {
+        setTheme("light");
+    }, [setTheme]);
 
     const handleLogin = async (e) => {
         e.preventDefault();

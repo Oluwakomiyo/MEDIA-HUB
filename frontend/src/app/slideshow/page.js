@@ -50,13 +50,13 @@ function SlideshowContent() {
 
   // 1. Fetch Data based on Selection
   useEffect(() => {
+    // If no play command AND no specific project ID, we stay in the Portal menu
     if (!isPlayingParam && !projectIdFilter) return;
 
     setLoading(true);
-    setImages([]);
-    setCurrentIndex(0);
-
     let url = `${API_URL}/api/slideshow`;
+
+    // If coming from project details, change the API target
     if (projectIdFilter) {
       url = `${API_URL}/api/projects/${projectIdFilter}`;
     } else if (featuredParam) {
@@ -69,45 +69,46 @@ function SlideshowContent() {
       .then(res => res.json())
       .then(data => {
         const final = projectIdFilter ? data.images : data;
-
-        const formatted = (final || []).map(img => ({
-          ...img,
-          project_id: data.id || img.project_id,
-          project_name: data.name || img.project_name,
-          category: data.category || img.category,
-          location: data.location || img.location,
-        }));
-
-        setImages(formatted);
+        if (final && final.length > 0) {
+          const formatted = final.map(img => ({
+            ...img,
+            project_id: data.id || img.project_id,
+            project_name: data.name || img.project_name,
+            category: data.category || img.category,
+            location: data.location || img.location,
+          }));
+          setImages(formatted);
+          setCurrentIndex(0);
+        }
         setLoading(false);
       })
-      .catch(err => {
-        console.error(err);
-        setImages([]);
-        setLoading(false);
-      });
+      .catch(() => setLoading(false));
   }, [isPlayingParam, categoryParam, featuredParam, projectIdFilter]);
 
   // 2. Playback Timer
   useEffect(() => {
-    if (!isAutoPlaying || images.length === 0 || !isPlayingParam) return;
+    // We only loop if we have images and auto-play is on.
+    // Removed the "isPlayingParam" check so it loops even for single project shows.
+    if (!isAutoPlaying || images.length <= 1) return;
 
-    const id = setInterval(() => {
+    const intervalId = setInterval(() => {
       setCurrentIndex(prev =>
         isRandom
           ? Math.floor(Math.random() * images.length)
           : (prev + 1) % images.length
       );
-    }, Number(duration) * 1000);
+    }, duration * 1000);
 
-    return () => clearInterval(id);
-  }, [isAutoPlaying, images, duration, isRandom, isPlayingParam]);
+    return () => clearInterval(intervalId);
+  }, [isAutoPlaying, images, duration, isRandom]);
 
   const handleExit = () => {
     if (projectIdFilter) {
+      // If we are in a single project slideshow, return to that project's details
       router.push(`/project/${projectIdFilter}`);
     } else {
-      router.push('/');
+      // Otherwise return to the presentation portal
+      router.push('/slideshow');
     }
   };
 
@@ -151,11 +152,11 @@ function SlideshowContent() {
   // --- RENDER MODE A: THE SELECTION DASHBOARD ---
   if (!isPlayingParam && !projectIdFilter) {
     return (
-      <div className="min-h-screen bg-slate-50 p-8 md:p-12">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-8 md:p-12">
         <div className="max-w-6xl mx-auto">
           <header className="mb-12">
-            <h1 className="text-2xl font-bold text-slate-900">Presentation Portal</h1>
-            <p className="text-slate-500 text-lg">Select a curated playlist to launch the cinematic kiosk.</p>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Presentation Portal</h1>
+            <p className="text-slate-500 dark:text-slate-400 text-lg">Select a curated playlist to launch the cinematic kiosk.</p>
           </header>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -179,18 +180,18 @@ function SlideshowContent() {
 
             {/* Option 3: Curated Building Types */}
             <div className="lg:col-span-3 mt-10">
-              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">Building Types & Categories</h3>
+              <h3 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6">Building Types & Categories</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {categories.map(cat => (
                   <button
                     key={cat}
                     onClick={() => router.push(`/slideshow?play=true&category=${cat}`)}
-                    className="p-6 bg-white border border-slate-200 rounded-3xl hover:shadow-xl hover:-translate-y-1 transition-all text-left group"
+                    className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl hover:shadow-xl hover:-translate-y-1 transition-all text-left group"
                   >
-                    <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center mb-4 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                    <div className="w-10 h-10 bg-slate-50 dark:bg-slate-950 rounded-xl flex items-center text-slate-600 dark:text-slate-300 justify-center mb-4 group-hover:bg-blue-50 dark:group-hover:bg-blue-950/50 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                       <ImageIcon size={20} />
                     </div>
-                    <p className="font-bold text-slate-900 text-sm leading-tight">{cat}</p>
+                    <p className="font-bold text-slate-900 dark:text-white text-sm leading-tight">{cat}</p>
                   </button>
                 ))}
               </div>
@@ -214,9 +215,10 @@ function SlideshowContent() {
   }
   if (images.length === 0) {
     return (
-      <div className="h-[90vh] rounded-[1rem] bg-slate-950 flex flex-col items-center justify-center text-white">
+      <div className="h-[90vh] rounded-[1rem] bg-white dark:bg-slate-950
+text-slate-900 dark:text-white flex flex-col items-center justify-center">
         <h2 className="text-2xl font-bold mb-2">No Images Found</h2>
-        <p className="text-slate-400 mb-8"> This category doesn't contain any slideshow images yet. </p>
+        <p className="text-slate-400 dark:text-slate-400 mb-8"> This category doesn't contain any slideshow images yet. </p>
         <button onClick={() => router.push("/slideshow")} className="px-6 py-3 bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors" > Return to Presentation Portal </button>
       </div>);
   }
@@ -242,8 +244,12 @@ function SlideshowContent() {
       <AnimatePresence>
         {showUI && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="z-[60] absolute inset-0 pointer-events-none">
+
             <div className="absolute top-8 left-8 right-8 flex justify-between items-center z-[100] pointer-events-auto">
-              <button onClick={() => router.push('/slideshow')} className="bg-white/10 backdrop-blur-md p-3 rounded-full hover:bg-red-600 text-white transition-all shadow-2xl border border-white/10"><X size={24} /></button>
+              <button onClick={handleExit} className="bg-white/10 backdrop-blur-md p-3 rounded-full hover:bg-red-600 text-white transition-all shadow-2xl border border-white/10">
+                <X size={24} />
+              </button>
+
               <div className="flex gap-4">
                 <button onClick={() => setShowSettings(!showSettings)} className="bg-white/10 backdrop-blur-md p-3 rounded-full text-white hover:bg-blue-600 transition-all"><Settings size={20} className={showSettings ? 'rotate-90' : ''} /></button>
                 <button onClick={toggleFocusMode} className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full text-white text-xs font-bold hover:bg-white/20 transition-all border border-white/10">
@@ -335,7 +341,9 @@ function PresentationCard({
         className="flex items-center justify-between group cursor-pointer"
         onClick={onClick}
       >
-        <div className="flex items-center gap-3 text-slate-400 group-hover:text-white transition-colors">
+        <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400
+group-hover:text-slate-900
+dark:group-hover:text-white transition-colors">
           {icon}
           <span className="text-xs font-bold uppercase tracking-wider">
             {label}
@@ -358,7 +366,7 @@ function PresentationCard({
   return (
     <button
       onClick={onClick}
-      className="relative group overflow-hidden bg-white p-10 rounded-[3rem] border border-slate-200 text-left hover:shadow-2xl hover:-translate-y-2 transition-all duration-500"
+      className="relative group overflow-hidden bg-white dark:bg-slate-900 p-10 rounded-[3rem] border border-slate-200 dark:border-slate-800 text-left hover:shadow-2xl hover:-translate-y-2 transition-all duration-500"
     >
       <div
         className={`w-16 h-16 ${color} text-white rounded-[1.5rem] flex items-center justify-center mb-8 shadow-xl group-hover:scale-110 transition-transform`}
@@ -366,8 +374,8 @@ function PresentationCard({
         {icon}
       </div>
 
-      <h2 className="text-2xl font-extrabold font-black text-slate-900 mb-2">{title}</h2>
-      <p className="text-slate-500 font-medium leading-relaxed">{desc}</p>
+      <h2 className="text-2xl font-extrabold font-black text-slate-900 dark:text-white mb-2">{title}</h2>
+      <p className="text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{desc}</p>
 
       <div className="mt-8 flex items-center gap-2 text-blue-600 font-bold text-sm tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-opacity">
         Launch Presentation <ChevronRight size={16} />
