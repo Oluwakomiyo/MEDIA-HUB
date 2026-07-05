@@ -82,17 +82,7 @@ export default function Home() {
             color="bg-blue-50 dark:bg-blue-950/40"
           />
         </Link>
-
-        {/* Card 2: Total Assets */}
-        <Link href="/gallery" className="flex flex-col group h-full">
-          <StatCard
-            icon={<ImageIcon className="text-purple-600" />}
-            label="Total Assets"
-            value={stats.assets}
-            color="bg-purple-50 dark:bg-purple-950/40"
-          />
-        </Link>
-
+        
         {/* Card 3: Featured Projects */}
         <Link href="/gallery?filter=featured" className="flex flex-col group h-full">
           <StatCard
@@ -100,6 +90,16 @@ export default function Home() {
             label="Featured Projects"
             value={stats.featured || 0}
             color="bg-amber-50 dark:bg-amber-950/40"
+          />
+        </Link>
+
+        {/* Card 2: Total Images */}
+        <Link href="/gallery" className="flex flex-col group h-full">
+          <StatCard
+            icon={<ImageIcon className="text-purple-600" />}
+            label="Total Images"
+            value={stats.assets}
+            color="bg-purple-50 dark:bg-purple-950/40"
           />
         </Link>
 

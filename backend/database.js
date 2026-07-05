@@ -38,7 +38,7 @@ async function setupDatabase() {
         )
     `);
 
-    const adminExists = await db.get('SELECT * FROM users WHERE username = "admin"');
+    const adminExists = await db.get('SELECT * FROM users WHERE username = ?', ['admin']);
     if (!adminExists) {
         const bcrypt = require('bcryptjs');
         const hash = await bcrypt.hash('admin123', 10); // Default password: admin123
