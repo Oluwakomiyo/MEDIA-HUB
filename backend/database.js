@@ -19,6 +19,10 @@ async function setupDatabase() {
             client_name TEXT,
             completion_date DATE,
             is_featured INTEGER DEFAULT 0,
+            is_award_winning INTEGER DEFAULT 0,
+            is_landmark INTEGER DEFAULT 0,
+            is_recently_completed INTEGER DEFAULT 0,
+            is_premium INTEGER DEFAULT 0,
             project_manager TEXT,
             project_value TEXT,
             partner TEXT,
@@ -63,7 +67,11 @@ async function setupDatabase() {
         { name: 'project_manager', type: 'TEXT' },
         { name: 'project_value', type: 'TEXT' },
         { name: 'partner', type: 'TEXT' },
-        { name: 'tags', type: 'TEXT' }
+        { name: 'tags', type: 'TEXT' },
+        { name: 'is_award_winning', type: 'INTEGER DEFAULT 0' },
+        { name: 'is_landmark', type: 'INTEGER DEFAULT 0' },
+        { name: 'is_recently_completed', type: 'INTEGER DEFAULT 0' },
+        { name: 'is_premium', type: 'INTEGER DEFAULT 0' }
     ];
 
     for (const col of newColumns) {

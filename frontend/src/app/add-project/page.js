@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     Upload, ArrowLeft, CheckCircle2, Star,
-    Info, Briefcase, User, DollarSign, MapPin, Calendar, FileText, X
+    Info, Briefcase, User, DollarSign, MapPin, Calendar, FileText, X, Award, Clock, ShieldCheck
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -19,7 +19,7 @@ export default function AddProject() {
 
     const categories = [
         'Residential', 'Commercial', 'Industrial', 'Healthcare',
-        'Infrastructure', 'Premium', 'Recently Completed', 'Award Winning'
+        'Infrastructure', 'Educational'
     ];
 
     // 1. FORM STATE
@@ -33,7 +33,11 @@ export default function AddProject() {
         project_manager: '',
         project_value: '',
         partner: '',
-        is_featured: false
+        is_featured: false,
+        is_award_winning: false,
+        is_landmark: false,
+        is_recently_completed: false,
+        is_premium: false
     });
 
     const [selectedFiles, setSelectedFiles] = useState([]);
@@ -360,49 +364,26 @@ export default function AddProject() {
                                 ))}
                             </div>
                         )}
+                    </div>
 
-                        <button
-                            type="button"
-                            onClick={() =>
-                                setFormData(prev => ({
-                                    ...prev,
-                                    is_featured: !prev.is_featured
-                                }))
-                            }
-                            className={`w-full mt-4 p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center ${formData?.is_featured
-                                ? "bg-amber-50 dark:bg-amber-950/30 border-amber-500"
-                                : "bg-slate-50 dark:bg-slate-800 border-transparent"
-                                }`}
-                        >
-                            <div className="w-full flex items-center justify-between ">
-                                <div className="flex items-center gap-3">
-                                    <Star
-                                        size={20}
-                                        fill={formData?.is_featured ? "#f59e0b" : "none"}
-                                        className={
-                                            formData?.is_featured ? "text-amber-500" : "text-slate-400 dark:text-slate-500"
-                                        }
-                                    />
+                    <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Project Distinctions</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <StatusCheckbox label="Featured" icon={<Star size={14} />} color="amber"
+                                checked={formData.is_featured} onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })} />
 
-                                    <span className="text-sm font-bold text-amber-900 dark:text-amber-300">
-                                        Featured Status
-                                    </span>
-                                </div>
+                            <StatusCheckbox label="Award Winning" icon={<Award size={14} />} color="emerald"
+                                checked={formData.is_award_winning} onChange={(e) => setFormData({ ...formData, is_award_winning: e.target.checked })} />
 
+                            <StatusCheckbox label="Landmark" icon={<MapPin size={14} />} color="purple"
+                                checked={formData.is_landmark} onChange={(e) => setFormData({ ...formData, is_landmark: e.target.checked })} />
 
+                            <StatusCheckbox label="Recently Completed" icon={<Clock size={14} />} color="blue"
+                                checked={formData.is_recently_completed} onChange={(e) => setFormData({ ...formData, is_recently_completed: e.target.checked })} />
 
-                                {/* toggle switch */}
-                                <div
-                                    className={`w-10 h-5 rounded-full relative transition-colors ${formData?.is_featured ? "bg-amber-500" : "bg-slate-300 dark:bg-slate-700"
-                                        }`}
-                                >
-                                    <div
-                                        className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${formData?.is_featured ? "right-1" : "left-1"
-                                            }`}
-                                    />
-                                </div>
-                            </div>
-                        </button>
+                            <StatusCheckbox label="Premium" icon={<ShieldCheck size={14} />} color="rose"
+                                checked={formData.is_premium} onChange={(e) => setFormData({ ...formData, is_premium: e.target.checked })} />
+                        </div>
                     </div>
 
                     {/* SECTION 5: DISCOVERY TAGS */}
@@ -488,5 +469,22 @@ function FormGroup({ label, children, icon }) {
             </label>
             {children}
         </div>
+    );
+}
+
+function StatusCheckbox({ label, icon, color, checked, onChange }) {
+    const colors = {
+        amber: "bg-amber-50 text-amber-600 border-amber-100",
+        emerald: "bg-emerald-50 text-emerald-600 border-emerald-100",
+        purple: "bg-purple-50 text-purple-600 border-purple-100",
+        blue: "bg-blue-50 text-blue-600 border-blue-100",
+        rose: "bg-rose-50 text-rose-600 border-rose-100"
+    };
+    return (
+        <label className={`flex items-center gap-3 p-3 rounded-2xl border cursor-pointer transition-all ${checked ? colors[color] : 'bg-slate-50 text-slate-400 border-transparent'}`}>
+            <input type="checkbox" className="hidden" checked={checked} onChange={onChange} />
+            {icon}
+            <span className="text-[10px] font-black uppercase tracking-tight">{label}</span>
+        </label>
     );
 }

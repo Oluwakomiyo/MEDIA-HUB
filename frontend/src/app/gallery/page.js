@@ -2,7 +2,7 @@
 import { useEffect, useState, Suspense } from 'react';
 import {
     ArrowLeft, Search, SlidersHorizontal, Star, // Ensure Star is here
-    MapPin, Trash2, ChevronDown, X
+    MapPin, Trash2, ChevronDown, X, Award, Clock, ShieldCheck
 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -19,6 +19,10 @@ function GalleryContent() {
     const [selectedCategory, setSelectedCategory] = useState("All Categories");
     const [selectedYear, setSelectedYear] = useState("All Years");
     const [isFeaturedOnly, setIsFeaturedOnly] = useState(false);
+    const [isAwardOnly, setIsAwardOnly] = useState(false);
+    const [isLandmarkOnly, setIsLandmarkOnly] = useState(false);
+    const [isRecentOnly, setIsRecentOnly] = useState(false);
+    const [isPremiumOnly, setIsPremiumOnly] = useState(false);
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
 
@@ -84,10 +88,14 @@ function GalleryContent() {
         if (isFeaturedOnly) {
             result = result.filter(p => p.is_featured === 1);
         }
+        if (isAwardOnly) result = result.filter(p => p.is_award_winning === 1);
+        if (isLandmarkOnly) result = result.filter(p => p.is_landmark === 1);
+        if (isRecentOnly) result = result.filter(p => p.is_recently_completed === 1);
+        if (isPremiumOnly) result = result.filter(p => p.is_premium === 1);
 
         // ... (Keep your Category, Year, and Featured filters below this)
         setFilteredProjects(result);
-    }, [searchQuery, selectedCategory, selectedYear, isFeaturedOnly, projects]);
+    }, [searchQuery, selectedCategory, selectedYear, isFeaturedOnly, isAwardOnly, isLandmarkOnly, isRecentOnly, isPremiumOnly, projects]);
 
     // --- PASTE THIS CODE INSIDE GalleryContent ---
     const deleteProject = async (id) => {
@@ -119,7 +127,7 @@ function GalleryContent() {
             alert("Failed to connect to the server.");
         }
     };
-    
+
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-4 md:p-8 text-slate-900 dark:text-white">
             <div className="max-w-7xl mx-auto">
@@ -150,17 +158,16 @@ function GalleryContent() {
                                 }`}
                         >
                             <SlidersHorizontal size={14} />
-                            Filters {isFeaturedOnly && " (1 active)"}
                         </button>
                     </div>
 
                     {showAdvanced && (
-                        <div className="px-4 pb-4 pt-2 border-t border-slate-100 dark:border-slate-800 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="px-5 pb-4 pt-2 border-t border-slate-100 dark:border-slate-800 grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase mb-1 block ml-1">Category</label>
                                 <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} className="w-full p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium outline-none text-slate-900 dark:text-white outline-none focus:border-blue-500">
                                     <option value="All Categories">All Categories</option>
-                                    {['Residential', 'Commercial', 'Industrial', 'Healthcare', 'Infrastructure', 'Premium', 'Landmark', 'Recently Completed', 'Award Winning'].map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                                    {['Residential', 'Commercial', 'Industrial', 'Healthcare', 'Infrastructure', 'Educational'].map(cat => <option key={cat} value={cat}>{cat}</option>)}
                                 </select>
                             </div>
 
@@ -172,19 +179,15 @@ function GalleryContent() {
                                 </select>
                             </div>
 
-                            <div className="flex flex-col justify-end">
-                                {/* CORRECTED: Featured Toggle Button */}
-                                <button
-                                    onClick={() => setIsFeaturedOnly(!isFeaturedOnly)}
-                                    className={`flex items-center justify-between w-full p-2 border rounded-lg transition-all ${isFeaturedOnly ? 'bg-amber-500 border-amber-500 text-white shadow-sm' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-300'
-                                        }`}
-                                >
-                                    <div className="flex items-center gap-2 text-xs font-bold">
-                                        <Star size={14} fill={isFeaturedOnly ? "white" : "none"} />
-                                        Featured Only
-                                    </div>
-                                    <span className="text-[9px] font-black">{isFeaturedOnly ? 'ON' : 'OFF'}</span>
-                                </button>
+                            <div>
+                                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase mb-1 block ml-1">Filter by Distinction</label>
+                                <div className="flex flex-wrap gap-2">
+                                    <FilterToggle label="Featured" active={isFeaturedOnly} onClick={() => setIsFeaturedOnly(!isFeaturedOnly)} icon={<Star size={12} fill={isFeaturedOnly ? "white" : "none"} />} color="bg-amber-500" />
+                                    <FilterToggle label="Award Winning" active={isAwardOnly} onClick={() => setIsAwardOnly(!isAwardOnly)} icon={<Award size={12} />} color="bg-emerald-500" />
+                                    <FilterToggle label="Landmark" active={isLandmarkOnly} onClick={() => setIsLandmarkOnly(!isLandmarkOnly)} icon={<MapPin size={12} />} color="bg-purple-500" />
+                                    <FilterToggle label="Recent" active={isRecentOnly} onClick={() => setIsRecentOnly(!isRecentOnly)} icon={<Clock size={12} />} color="bg-blue-500" />
+                                    <FilterToggle label="Premium" active={isPremiumOnly} onClick={() => setIsPremiumOnly(!isPremiumOnly)} icon={<ShieldCheck size={12} />} color="bg-rose-500" />
+                                </div>
                             </div>
                         </div>
                     )}
@@ -196,11 +199,12 @@ function GalleryContent() {
                         <div key={project.id} className="group bg-white dark:bg-slate-900 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all relative">
 
                             {/* RESTORED: Visual Star Badge on the Card */}
-                            {project.is_featured === 1 && (
-                                <div className="absolute top-3 right-3 bg-amber-500 text-white p-1 rounded-full shadow-lg z-20 border border-white/20">
-                                    <Star size={12} fill="white" />
-                                </div>
-                            )}
+                            <div className="absolute top-3 right-2 z-20 flex flex-col items-end gap-1.5">
+                                {project.is_featured === 1 && <MiniBadge color="bg-amber-500" icon={<Star size={10} fill="white" />} />}
+                                {project.is_award_winning === 1 && <MiniBadge color="bg-emerald-500" icon={<Award size={10} />} />}
+                                {project.is_landmark === 1 && <MiniBadge color="bg-purple-500" icon={<MapPin size={10} />} />}
+                                {project.is_premium === 1 && <MiniBadge color="bg-rose-500" icon={<ShieldCheck size={10} />} />}
+                            </div>
 
                             {isAdmin && (
                                 <button
@@ -268,5 +272,25 @@ export default function Gallery() {
         <Suspense fallback={<div className="p-20 text-center text-slate-400 dark:text-slate-500 font-medium">Initializing Gallery...</div>}>
             <GalleryContent />
         </Suspense>
+    );
+}
+
+function FilterToggle({ label, active, onClick, icon, color }) {
+    return (
+        <button
+            onClick={onClick}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all border
+            ${active ? `${color} text-white border-transparent shadow-lg` : 'bg-slate-50 dark:bg-slate-800 text-slate-400 border-slate-100 dark:border-slate-700 hover:bg-slate-100'}`}
+        >
+            {icon} {label}
+        </button>
+    );
+}
+
+function MiniBadge({ color, icon }) {
+    return (
+        <div className={`${color} text-white p-1.5 rounded-lg shadow-lg border border-white/20 animate-in zoom-in duration-300`}>
+            {icon}
+        </div>
     );
 }

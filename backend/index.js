@@ -67,7 +67,7 @@ setupDatabase().then((db) => {
         // Destructure every field from the frontend request
         const {
             name, description, category, location, client_name,
-            completion_date, is_featured, project_manager,
+            completion_date, is_featured, is_award_winning, is_landmark, is_recently_completed, is_premium, project_manager,
             project_value, partner, tags
         } = req.body;
 
@@ -75,12 +75,12 @@ setupDatabase().then((db) => {
             const result = await db.run(
                 `INSERT INTO projects (
                 name, description, category, location, client_name, 
-                completion_date, is_featured, project_manager, 
+                completion_date, is_featured, is_award_winning, is_landmark, is_recently_completed, is_premium, project_manager, 
                 project_value, partner, tags
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
                     name, description, category, location, client_name,
-                    completion_date, is_featured ? 1 : 0, project_manager,
+                    completion_date, is_featured ? 1 : 0, is_award_winning ? 1 : 0, is_landmark ? 1 : 0, is_recently_completed ? 1 : 0, is_premium ? 1 : 0, project_manager,
                     project_value, partner, tags
                 ]
             );
@@ -96,7 +96,7 @@ setupDatabase().then((db) => {
     app.put('/api/projects/:id', isAdmin, async (req, res) => {
         const {
             name, description, category, location, client_name,
-            completion_date, is_featured, project_manager,
+            completion_date, is_featured, is_award_winning, is_landmark, is_recently_completed, is_premium, project_manager,
             project_value, partner, tags
         } = req.body;
 
@@ -106,12 +106,12 @@ setupDatabase().then((db) => {
             await db.run(
                 `UPDATE projects SET 
                 name = ?, description = ?, category = ?, location = ?, 
-                client_name = ?, completion_date = ?, is_featured = ?, 
+                client_name = ?, completion_date = ?, is_featured = ?, is_award_winning = ?, is_landmark = ?, is_recently_completed = ?, is_premium = ?,
                 project_manager = ?, project_value = ?, partner = ?, tags = ?
              WHERE id = ?`,
                 [
                     name, description, category, location, client_name,
-                    completion_date, is_featured ? 1 : 0, project_manager,
+                    completion_date, is_featured ? 1 : 0, is_award_winning ? 1 : 0, is_landmark ? 1 : 0, is_recently_completed ? 1 : 0, is_premium ? 1 : 0, project_manager,
                     project_value, partner, tags, projectId
                 ]
             );
