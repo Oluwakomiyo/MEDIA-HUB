@@ -373,26 +373,49 @@ FROM projects p
 
     // Route for the Slideshow: Gets all images from all projects
     app.get('/api/slideshow', async (req, res) => {
-        const { category, featured } = req.query;
-        try {
-            let query = `
-            SELECT i.file_path, p.id as project_id, p.name as project_name, p.category, p.location
-            FROM images i
-            JOIN projects p ON i.project_id = p.id
-        `;
-            let params = [];
+        const { category, distinction } = req.query;
 
-            if (featured === 'true') {
-                query += ` WHERE p.is_featured = 1`;
-            } else if (category && category !== 'All') {
-                query += ` WHERE p.category = ?`;
+        try {
+            // We use INNER JOIN to ensure we ONLY get images that actually belong to projects
+            let query = `
+            SELECT i.file_path, p.id as project_id, p.name as project_name, p.category, p.location,
+            p.is_featured, p.is_award_winning, p.is_landmark, p.is_recently_completed, p.is_premium
+            FROM images i
+            INNER JOIN projects p ON i.project_id = p.id
+        `;
+
+            let params = [];
+            let conditions = [];
+
+            // Distinction Filtering
+            if (distinction === 'featured') conditions.push("p.is_featured = 1");
+            else if (distinction === 'award') conditions.push("p.is_award_winning = 1");
+            else if (distinction === 'landmark') conditions.push("p.is_landmark = 1");
+            else if (distinction === 'recent') conditions.push("p.is_recently_completed = 1");
+            else if (distinction === 'premium') conditions.push("p.is_premium = 1");
+
+            // Category Filtering
+            // Ensure "All" actually pulls everything, and specific categories pull ONLY their own
+            if (category && category !== 'All') {
+                conditions.push("p.category = ?");
                 params.push(category);
             }
 
+            if (conditions.length > 0) {
+                query += " WHERE " + conditions.join(" AND ");
+            }
+
             query += ` ORDER BY i.id DESC`;
+
             const images = await db.all(query, params);
-            res.json(images);
-        } catch (err) { res.status(500).json({ error: err.message }); }
+
+            // Final Safety Check: If no images found, return an empty array []
+            res.json(images || []);
+
+        } catch (err) {
+            console.error("Slideshow API Error:", err);
+            res.status(500).json({ error: "Failed to fetch slideshow data" });
+        }
     });
 
     // --- DASHBOARD STATS API ---

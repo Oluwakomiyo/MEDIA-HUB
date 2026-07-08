@@ -231,7 +231,7 @@ export default function ProjectDetails() {
                                 {project.is_recently_completed === 1 && <Badge label="Recently Completed" icon={<Clock size={10} />} color="bg-blue-400" />}
                             </div>
                             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tighter mb-4 text-slate-900 dark:text-white">{project.name}</h1>
-                            <p className="flex items-center text-slate-400 dark:text-slate-500 gap-2 text-lg italic"><MapPin size={18} className="text-blue-500" /> {project.location}</p>
+                            <p className="flex items-center text-slate-400 dark:text-slate-500 gap-2 text-lg "><MapPin size={18} className="text-blue-500" /> {project.location}</p>
                         </div>
 
                         <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-slate-100 dark:divide-slate-800 border-b border-slate-100 dark:border-slate-800">
@@ -242,7 +242,7 @@ export default function ProjectDetails() {
                                 value={
                                     project.project_value &&
                                         !isNaN(Number(project.project_value))
-                                        ? `$${Number(project.project_value).toLocaleString()}`
+                                        ? `$ ${Number(project.project_value).toLocaleString()}`
                                         : "---"
                                 }
                                 color="text-blue-600"
@@ -489,7 +489,7 @@ function Badge({ label, icon, color }) {
 
 function InfoBox({ label, value, color = "text-slate-800 dark:text-slate-200", icon }) {
     return (
-        <div className="p-8"><p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2">{icon} {label}</p><p className={`text-xl font-bold tracking-tight truncate ${color}`}>{value || "---"}</p></div>
+        <div className="p-8 overflow-none"><p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2">{icon} {label}</p><p className={`text-base font-bold tracking-tight truncate ${color}`}>{value || "---"}</p></div>
     );
 }
 
@@ -501,14 +501,19 @@ function EditField({ label, value, onChange, type = "text" }) {
 
 function StatusCheckbox({ label, icon, color, checked, onChange }) {
     const colors = {
-        amber: "bg-amber-50 text-amber-600 border-amber-100",
-        emerald: "bg-emerald-50 text-emerald-600 border-emerald-100",
-        purple: "bg-purple-50 text-purple-600 border-purple-100",
-        blue: "bg-blue-50 text-blue-600 border-blue-100",
-        rose: "bg-rose-50 text-rose-600 border-rose-100"
+        amber:
+            "bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900",
+        emerald:
+            "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900",
+        purple:
+            "bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border-purple-100 dark:border-purple-900",
+        blue:
+            "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900",
+        rose:
+            "bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border-rose-100 dark:border-rose-900",
     };
     return (
-        <label className={`flex items-center gap-3 p-3 rounded-2xl border cursor-pointer transition-all ${checked ? colors[color] : 'bg-slate-50 text-slate-400 border-transparent'}`}>
+        <label className={`flex items-center gap-3 p-3 rounded-2xl border cursor-pointer transition-all ${checked ? colors[color] : 'bg-slate-50 dark:bg-slate-900 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700'}`}>
             <input type="checkbox" className="hidden" checked={checked} onChange={onChange} />
             {icon}
             <span className="text-[10px] font-black uppercase tracking-tight">{label}</span>

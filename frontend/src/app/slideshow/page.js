@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Play, Pause, X, ChevronLeft, ChevronRight, Maximize, Minimize,
   Settings, Zap, Clock, Image as ImageIcon, Info, Star, LayoutGrid, Award, ShieldCheck,
-  Presentation
+  Presentation, MapPin
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -26,7 +26,7 @@ function SlideshowContent() {
   // Check if we are currently playing a slideshow
   const isPlayingParam = searchParams.get('play') === 'true';
   const categoryParam = searchParams.get('category') || 'All';
-  const featuredParam = searchParams.get('featured') === 'true';
+  const distinctionParam = searchParams.get('distinction');
   const projectIdFilter = searchParams.get('projectId');
 
   const [images, setImages] = useState([]);
@@ -46,29 +46,35 @@ function SlideshowContent() {
   const slideshowRef = useRef(null);
   const uiTimeout = useRef(null);
 
-  const categories = ['Residential', 'Commercial', 'Industrial', 'Healthcare', 'Infrastructure', 'Premium', 'Landmark', 'Recently Completed', 'Award Winning'];
+  const categories = ['Residential', 'Commercial', 'Industrial', 'Healthcare', 'Infrastructure', 'Educational'];
 
   // 1. Fetch Data based on Selection
   useEffect(() => {
-    // If no play command AND no specific project ID, we stay in the Portal menu
+    // 1. If we aren't supposed to play anything yet, stop here.
     if (!isPlayingParam && !projectIdFilter) return;
 
+    // 2. CLEAR PREVIOUS DATA immediately to prevent "ghost" images
     setLoading(true);
+    setImages([]);
+    setCurrentIndex(0);
+
     let url = `${API_URL}/api/slideshow`;
 
-    // If coming from project details, change the API target
     if (projectIdFilter) {
       url = `${API_URL}/api/projects/${projectIdFilter}`;
-    } else if (featuredParam) {
-      url += `?featured=true`;
-    } else if (categoryParam !== 'All') {
-      url += `?category=${encodeURIComponent(categoryParam)}`;
+    } else {
+      const params = new URLSearchParams();
+      if (categoryParam !== 'All') params.append('category', categoryParam);
+      if (distinctionParam) params.append('distinction', distinctionParam);
+      url += `?${params.toString()}`;
     }
 
     fetch(url)
       .then(res => res.json())
       .then(data => {
+        // Handle both single project (data.images) and category list (data array)
         const final = projectIdFilter ? data.images : data;
+
         if (final && final.length > 0) {
           const formatted = final.map(img => ({
             ...img,
@@ -78,12 +84,18 @@ function SlideshowContent() {
             location: data.location || img.location,
           }));
           setImages(formatted);
-          setCurrentIndex(0);
+        } else {
+          // If the array is empty, ensure the state is empty
+          setImages([]);
         }
         setLoading(false);
       })
-      .catch(() => setLoading(false));
-  }, [isPlayingParam, categoryParam, featuredParam, projectIdFilter]);
+      .catch(err => {
+        console.error(err);
+        setImages([]);
+        setLoading(false);
+      });
+  }, [isPlayingParam, categoryParam, distinctionParam, projectIdFilter]);
 
   // 2. Playback Timer
   useEffect(() => {
@@ -175,7 +187,39 @@ function SlideshowContent() {
               desc="Highlight only the firm's top-tier, starred projects."
               icon={<Star size={32} fill="white" />}
               color="bg-amber-500"
-              onClick={() => router.push('/slideshow?play=true&featured=true')}
+              onClick={() => router.push('/slideshow?play=true&distinction=featured')}
+            />
+
+            <PresentationCard
+              title="Award Winning"
+              desc="Highlight only the firm's top-tier, starred projects."
+              icon={<Award size={32} />}
+              color="bg-emerald-500"
+              onClick={() => router.push('/slideshow?play=true&distinction=award')}
+            />
+
+            <PresentationCard
+              title="Landmarks"
+              desc="Highlight only the firm's top-tier, starred projects."
+              icon={<MapPin size={32} />}
+              color="bg-purple-500"
+              onClick={() => router.push('/slideshow?play=true&distinction=landmark')}
+            />
+
+            <PresentationCard
+              title="Premium"
+              desc="Highlight only the firm's top-tier, starred projects."
+              icon={<ShieldCheck size={32} />}
+              color="bg-rose-500"
+              onClick={() => router.push('/slideshow?play=true&distinction=premium')}
+            />
+
+            <PresentationCard
+              title="Recently Completed"
+              desc="Highlight only the firm's top-tier, starred projects."
+              icon={<Clock size={32} />}
+              color="bg-blue-500"
+              onClick={() => router.push('/slideshow?play=true&distinction=recent')}
             />
 
             {/* Option 3: Curated Building Types */}
@@ -272,6 +316,13 @@ text-slate-900 dark:text-white flex flex-col items-center justify-center">
               href={`/project/${currentImg.project_id}`}
               className="group/info block cursor-pointer"
             >
+              <div className="flex flex-wrap gap-2 mb-4">
+                {currentImg.is_award_winning === 1 && <span className="bg-emerald-500 text-white px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest">Award</span>}
+                {currentImg.is_landmark === 1 && <span className="bg-purple-500 text-white px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest">Landmark</span>}
+                {currentImg.is_premium === 1 && <span className="bg-rose-500 text-white px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest">Premium</span>}
+                {currentImg.is_recent === 1 && <span className="bg-blue-500 text-white px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest">Recent</span>}
+                {currentImg.is_featured === 1 && <span className="bg-amber-500 text-white px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest">Featured</span>}
+              </div>
               <div className="flex flex-col">
                 <span className="text-blue-400 font-black uppercase tracking-[0.3em] text-[10px] mb-2 inline-block border-b border-blue-400 pb-1 group-hover/info:text-white group-hover/info:border-white transition-all">
                   {currentImg.category} • VIEW DETAILS

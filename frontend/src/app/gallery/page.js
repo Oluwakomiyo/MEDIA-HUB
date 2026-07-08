@@ -157,6 +157,7 @@ function GalleryContent() {
                             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all border ${showAdvanced ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'
                                 }`}
                         >
+                            Filter
                             <SlidersHorizontal size={14} />
                         </button>
                     </div>
@@ -199,7 +200,7 @@ function GalleryContent() {
                         <div key={project.id} className="group bg-white dark:bg-slate-900 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all relative">
 
                             {/* RESTORED: Visual Star Badge on the Card */}
-                            <div className="absolute top-3 right-2 z-20 flex flex-col items-end gap-1.5">
+                            <div className="absolute top-3 right-4 z-20 flex flex-col items-end gap-1.5">
                                 {project.is_featured === 1 && <MiniBadge color="bg-amber-500" icon={<Star size={10} fill="white" />} />}
                                 {project.is_award_winning === 1 && <MiniBadge color="bg-emerald-500" icon={<Award size={10} />} />}
                                 {project.is_landmark === 1 && <MiniBadge color="bg-purple-500" icon={<MapPin size={10} />} />}
