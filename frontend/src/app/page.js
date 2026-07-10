@@ -231,7 +231,7 @@ export default function Home() {
 
                 <div className="p-6">
                   <h4 className="font-bold text-slate-900 dark:text-white text-lg group-hover:text-blue-600 transition-colors truncate">{project.name}</h4>
-                  <p className="text-slate-400 dark:text-slate-500 text-xs flex items-center gap-1 mt-1 font-medium italic"><MapPin size={12} /> {project.location}</p>
+                  <p className="text-slate-400 dark:text-slate-500 text-xs flex items-center gap-1 mt-1 font-medium "><MapPin size={12} /> {project.location}</p>
                 </div>
               </Link>
             ))}

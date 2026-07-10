@@ -57,8 +57,10 @@ export default function RootLayout({ children }) {
             <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col fixed h-full border-r border-slate-800">
               <div className="p-6 select-none">
                 <h2 className="text-white text-xl font-bold tracking-tight flex items-center gap-2">
-                  <div className="w-10 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-xs">YOUR</div>
-                  MEDIA HUB
+                  <div className="w-auto h-10 rounded-lg flex items-center justify-center text-xs"><img src="/ccplogo.png" alt="CCP Logo" className='h-20 w-auto'></img></div>
+                  <span className="text-lg font-bold tracking-wider text-white">
+                    CCP MEDIA HUB
+                  </span>
                 </h2>
               </div>
 

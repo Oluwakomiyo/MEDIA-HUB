@@ -156,15 +156,64 @@ function SlideshowContent() {
   };
 
   const variants = {
-    zoom: { initial: { opacity: 0, scale: 1.2 }, animate: { opacity: 1, scale: 1 }, exit: { opacity: 0 }, transition: { duration: 1.5 } },
-    fade: { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 }, transition: { duration: 1 } },
-    slide: { initial: { x: '100%' }, animate: { x: 0 }, exit: { x: '-100%' }, transition: { duration: 0.8 } }
+    // 1. FADE: Classic cross-dissolve
+    fade: {
+      initial: { opacity: 0 },
+      animate: { opacity: 1 },
+      exit: { opacity: 0 },
+      transition: { duration: 1 }
+    },
+    // 2. SLIDE: Horizontal push
+    slide: {
+      initial: { x: '100%' },
+      animate: { x: 0 },
+      exit: { x: '-100%' },
+      transition: { duration: 0.8, ease: "easeInOut" }
+    },
+    // 3. ZOOM: Scale from small to full
+    zoom: {
+      initial: { opacity: 0, scale: 0.5 },
+      animate: { opacity: 1, scale: 1 },
+      exit: { opacity: 0, scale: 1.2 },
+      transition: { duration: 1 }
+    },
+    // 4. CAROUSEL: 3D-like depth slide
+    carousel: {
+      initial: { x: 300, rotateY: 45, opacity: 0, scale: 0.8 },
+      animate: { x: 0, rotateY: 0, opacity: 1, scale: 1 },
+      exit: { x: -300, rotateY: -45, opacity: 0, scale: 0.8 },
+      transition: { duration: 0.8, ease: "circOut" }
+    },
+    // 5. FLIP: 3D card flip
+    flip: {
+      initial: { rotateY: 90, opacity: 0 },
+      animate: { rotateY: 0, opacity: 1 },
+      exit: { rotateY: -90, opacity: 0 },
+      transition: { duration: 0.7 }
+    },
+    // 6. KEN BURNS: The Default - Slow panning and zooming
+    'ken-burns': {
+      initial: { opacity: 0, scale: 1, x: "0%", y: "0%" },
+      animate: {
+        opacity: 1,
+        scale: 1.2,
+        x: "-2%",
+        y: "-2%",
+        transition: {
+          opacity: { duration: 1.5 },
+          scale: { duration: duration + 1, ease: "linear" },
+          x: { duration: duration + 1, ease: "linear" },
+          y: { duration: duration + 1, ease: "linear" }
+        }
+      },
+      exit: { opacity: 0, transition: { duration: 1.5 } }
+    }
   };
 
   // --- RENDER MODE A: THE SELECTION DASHBOARD ---
   if (!isPlayingParam && !projectIdFilter) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-8 md:p-12">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-8 md:p-12 ">
         <div className="max-w-6xl mx-auto">
           <header className="mb-12">
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Presentation Portal</h1>
@@ -192,7 +241,7 @@ function SlideshowContent() {
 
             <PresentationCard
               title="Award Winning"
-              desc="Highlight only the firm's top-tier, starred projects."
+              desc="Showcase projects recognized for excellence, innovation, and outstanding achievements."
               icon={<Award size={32} />}
               color="bg-emerald-500"
               onClick={() => router.push('/slideshow?play=true&distinction=award')}
@@ -200,7 +249,7 @@ function SlideshowContent() {
 
             <PresentationCard
               title="Landmarks"
-              desc="Highlight only the firm's top-tier, starred projects."
+              desc="Present iconic projects that define spaces and leave a lasting impact."
               icon={<MapPin size={32} />}
               color="bg-purple-500"
               onClick={() => router.push('/slideshow?play=true&distinction=landmark')}
@@ -208,7 +257,7 @@ function SlideshowContent() {
 
             <PresentationCard
               title="Premium"
-              desc="Highlight only the firm's top-tier, starred projects."
+              desc="Display high-value projects showcasing exceptional quality and craftsmanship."
               icon={<ShieldCheck size={32} />}
               color="bg-rose-500"
               onClick={() => router.push('/slideshow?play=true&distinction=premium')}
@@ -216,7 +265,7 @@ function SlideshowContent() {
 
             <PresentationCard
               title="Recently Completed"
-              desc="Highlight only the firm's top-tier, starred projects."
+              desc="Explore the firm's latest completed projects and recent accomplishments."
               icon={<Clock size={32} />}
               color="bg-blue-500"
               onClick={() => router.push('/slideshow?play=true&distinction=recent')}
@@ -275,7 +324,7 @@ text-slate-900 dark:text-white flex flex-col items-center justify-center">
         ${isFocusMode
         ? 'h-screen w-full rounded-none'
         : 'h-[90vh] w-full max-w-7xl rounded-[1rem] shadow-[0_40px_100px_rgba(0,0,0,0.7)] border border-white/5'
-      } ${isFocusMode && !showUI ? 'cursor-none' : 'cursor-default'}`}>
+      } ${isFocusMode && !showUI ? 'cursor-none' : 'cursor-default'}`} style={{ transformStyle: 'preserve-3d' }}>
       <AnimatePresence mode="wait">
         <motion.div key={`${effect}-${currentIndex}`} className="absolute inset-0" {...variants[effect]}>
           <img src={`${API_URL}/uploads/${currentImg.file_path}`} alt={currentImg.project_name} className="w-full h-full object-cover" />
@@ -330,7 +379,7 @@ text-slate-900 dark:text-white flex flex-col items-center justify-center">
                 <h1 className="text-5xl md:text-6xl font-bold mb-1 tracking-tighter group-hover/info:translate-x-2 transition-transform duration-300">
                   {currentImg.project_name}
                 </h1>
-                <p className="text-xl text-slate-400 font-light italic group-hover/info:text-slate-200 transition-colors">
+                <p className="text-xl text-slate-400 font-light group-hover/info:text-slate-200 transition-colors">
                   {currentImg.location}
                 </p>
               </div>
@@ -350,10 +399,29 @@ text-slate-900 dark:text-white flex flex-col items-center justify-center">
             </h2>
             <div className="space-y-8">
               <section>
-                <label className="text-xs font-bold text-slate-500 uppercase block mb-4 tracking-widest">Transition</label>
+                <label className="text-[10px] font-black text-slate-500 uppercase block mb-4 tracking-widest">
+                  Transition Effect
+                </label>
                 <div className="grid grid-cols-2 gap-2">
-                  {['zoom', 'fade', 'slide'].map(t => (
-                    <button key={t} onClick={() => setEffect(t)} className={`py-2 rounded-lg text-sm capitalize font-bold ${effect === t ? 'bg-blue-600' : 'bg-white/5 hover:bg-white/10'}`}>{t}</button>
+                  {[
+                    { id: 'ken-burns', label: 'Ken Burns' },
+                    { id: 'fade', label: 'Fade' },
+                    { id: 'slide', label: 'Slide' },
+                    { id: 'zoom', label: 'Zoom' },
+                    { id: 'carousel', label: 'Carousel' },
+                    { id: 'flip', label: '3D Flip' }
+                  ].map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => setEffect(t.id)}
+                      className={`py-2 px-3 rounded-xl text-[10px] font-bold uppercase tracking-tighter transition-all
+          ${effect === t.id
+                          ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40'
+                          : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white'
+                        }`}
+                    >
+                      {t.label}
+                    </button>
                   ))}
                 </div>
               </section>
