@@ -6,6 +6,22 @@ import {
     Info, Briefcase, User, DollarSign, MapPin, Calendar, FileText, X, Award, Clock, ShieldCheck
 } from 'lucide-react';
 import Link from 'next/link';
+import {
+    DndContext,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    closestCenter,
+} from "@dnd-kit/core";
+
+import {
+    SortableContext,
+    useSortable,
+    rectSortingStrategy,
+    arrayMove,
+} from "@dnd-kit/sortable";
+
+import { CSS } from "@dnd-kit/utilities";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -42,6 +58,36 @@ export default function AddProject() {
 
     const [selectedFiles, setSelectedFiles] = useState([]);
 
+    const[hydrated, setHydrated] = useState(false);
+
+    useEffect(() => {
+        const saved = localStorage.getItem("addProjectForm");
+
+        if (saved) {
+            const parsed = JSON.parse(saved);
+
+            setFormData(parsed.formData);
+            setTagList(parsed.tagList || []);
+            setTagInput(parsed.tagInput || "");
+        }
+
+        setHydrated(true);
+    }, []);
+
+
+    useEffect(() => {
+        if (!hydrated) return;
+
+        localStorage.setItem(
+            "addProjectForm",
+            JSON.stringify({
+                formData,
+                tagList,
+                tagInput
+            })
+        );
+    }, [formData, tagList, tagInput, hydrated]);
+
     const handleFiles = (files) => {
         const incomingFiles = Array.from(files);
 
@@ -69,8 +115,9 @@ export default function AddProject() {
         }
 
         const arr = validFiles.map(file => ({
+            id: crypto.randomUUID(),
             file,
-            preview: URL.createObjectURL(file)
+            preview: URL.createObjectURL(file),
         }));
 
         setSelectedFiles(prev => [...prev, ...arr]);
@@ -82,7 +129,31 @@ export default function AddProject() {
                 URL.revokeObjectURL(item.preview);
             });
         };
-    }, []);
+    }, [selectedFiles]);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 5,
+            },
+        })
+    );
+
+    const handleDragEnd = ({ active, over }) => {
+        if (!over || active.id === over.id) return;
+
+        setSelectedFiles((items) => {
+            const oldIndex = items.findIndex(
+                item => item.id === active.id
+            );
+
+            const newIndex = items.findIndex(
+                item => item.id === over.id
+            );
+
+            return arrayMove(items, oldIndex, newIndex);
+        });
+    };
 
     // 2. SUBMIT LOGIC
     const handleSubmit = async (e) => {
@@ -110,9 +181,13 @@ export default function AddProject() {
 
             if (data.id && selectedFiles.length > 0) {
                 const imageFormData = new FormData();
+
                 for (let i = 0; i < selectedFiles.length; i++) {
                     imageFormData.append('images', selectedFiles[i].file);
                 }
+
+                // first image is the cover
+                imageFormData.append('coverIndex', '0');
 
                 const uploadRes = await fetch(`${API_URL}/api/projects/${data.id}/upload`,
                     {
@@ -133,6 +208,7 @@ export default function AddProject() {
             }
 
             setSuccess(true);
+            localStorage.removeItem("addProjectForm");
             setTimeout(() => router.push(`/project/${data.id}`), 2000);
         } catch (error) {
             console.error("Upload failed", error);
@@ -153,15 +229,15 @@ export default function AddProject() {
     }
 
     // 3. REMOVE FILE PREVIEW LOGIC
-    const removeFile = (index) => {
+    const removeFile = (id) => {
         setSelectedFiles(prev => {
-            const removed = prev[index];
+            const removed = prev.find(item => item.id === id);
 
             if (removed?.preview) {
                 URL.revokeObjectURL(removed.preview);
             }
 
-            return prev.filter((_, i) => i !== index);
+            return prev.filter(item => item.id !== id);
         });
     };
 
@@ -217,7 +293,7 @@ export default function AddProject() {
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <FormGroup label="Project Name">
-                                <input required type="text" placeholder="e.g. Grand Central Station" className="form-input"
+                                <input required type="text" value={formData.name} placeholder="e.g. Grand Central Station" className="form-input"
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
                             </FormGroup>
 
@@ -239,7 +315,7 @@ export default function AddProject() {
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <FormGroup label="Project Manager" icon={<User size={14} />}>
-                                <input required type="text" placeholder="Manager Name" className="form-input"
+                                <input required type="text" value={formData.project_manager} placeholder="Manager Name" className="form-input"
                                     onChange={(e) => setFormData({ ...formData, project_manager: e.target.value })} />
                             </FormGroup>
 
@@ -259,12 +335,12 @@ export default function AddProject() {
                             </FormGroup>
 
                             <FormGroup label="Client Name">
-                                <input required type="text" placeholder="Organization Name" className="form-input"
+                                <input required type="text" value={formData.client_name} placeholder="Organization Name" className="form-input"
                                     onChange={(e) => setFormData({ ...formData, client_name: e.target.value })} />
                             </FormGroup>
 
                             <FormGroup label="Partner">
-                                <input type="text" placeholder="Key Contact" className="form-input"
+                                <input type="text" value={formData.partner} placeholder="Key Contact" className="form-input"
                                     onChange={(e) => setFormData({ ...formData, partner: e.target.value })} />
                             </FormGroup>
                         </div>
@@ -277,18 +353,18 @@ export default function AddProject() {
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                             <FormGroup label="Site Location">
-                                <input type="text" placeholder="City, State" className="form-input"
+                                <input type="text" value={formData.location} placeholder="City, State" className="form-input"
                                     onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
                             </FormGroup>
 
                             <FormGroup label="Completion Date">
-                                <input type="date" className="form-input"
+                                <input type="date" value={formData.completion_date} className="form-input"
                                     onChange={(e) => setFormData({ ...formData, completion_date: e.target.value })} />
                             </FormGroup>
                         </div>
 
                         <FormGroup label="Detailed Description">
-                            <textarea required rows="3" placeholder="Overview of architectural scope..." className="form-input resize-none"
+                            <textarea required rows="3" value={formData.description} placeholder="Overview of architectural scope..." className="form-input resize-none"
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}></textarea>
                         </FormGroup>
                     </div>
@@ -334,35 +410,27 @@ export default function AddProject() {
                             </label>
                         </div>
                         {selectedFiles.length > 0 && (
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 mb-8">
-                                {selectedFiles.map((item, index) => (
-                                    <div key={index} className="relative group rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 ">
-
-                                        <img
-                                            src={item.preview}
-                                            alt={`Preview ${index + 1}`}
-                                            onError={(e) => {
-                                                e.target.src = "/placeholder.jpg";
-                                            }}
-                                            className="w-full h-28 object-cover group-hover:scale-105 transition-transform duration-300"
-                                        />
-                                        <div className="p-2">
-                                            <p className="text-xs text-slate-600 dark:text-slate-300 truncate">
-                                                {item.file.name}
-                                            </p>
-                                        </div>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => removeFile(index)}
-                                            className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center bg-red-500 text-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all"
-                                        >
-                                            ✕
-                                        </button>
-
+                            <DndContext
+                                sensors={sensors}
+                                collisionDetection={closestCenter}
+                                onDragEnd={handleDragEnd}
+                            >
+                                <SortableContext
+                                    items={selectedFiles.map(item => item.id)}
+                                    strategy={rectSortingStrategy}
+                                >
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 mb-8">
+                                        {selectedFiles.map((item, index) => (
+                                            <SortableImage
+                                                key={item.id}
+                                                item={item}
+                                                index={index}
+                                                removeFile={removeFile}
+                                            />
+                                        ))}
                                     </div>
-                                ))}
-                            </div>
+                                </SortableContext>
+                            </DndContext>
                         )}
                     </div>
 
@@ -486,5 +554,66 @@ function StatusCheckbox({ label, icon, color, checked, onChange }) {
             {icon}
             <span className="text-[10px] font-black uppercase tracking-tight">{label}</span>
         </label>
+    );
+}
+
+function SortableImage({ item, index, removeFile }) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({
+        id: item.id,
+    });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    };
+
+    return (
+        <div
+            ref={setNodeRef}
+            style={style}
+            {...attributes}
+            {...listeners}
+            className={`relative group rounded-2xl overflow-hidden border
+                border-slate-200 dark:border-slate-700
+                bg-slate-50 dark:bg-slate-800
+                cursor-grab active:cursor-grabbing
+                ${isDragging ? "z-50 shadow-2xl scale-105" : ""}
+            `}
+        >
+            <img
+                src={item.preview}
+                alt=""
+                draggable={false}
+                className="w-full h-28 object-cover select-none"
+            />
+
+            <div className="p-2">
+                <p className="text-xs truncate">
+                    {item.file.name}
+                </p>
+            </div>
+
+            {index === 0 && (
+                <div className="absolute top-2 left-2 px-2 py-1 rounded bg-blue-600 text-white text-[10px] font-bold">
+                    Cover
+                </div>
+            )}
+
+            <button
+                type="button"
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={() => removeFile(item.id)}
+                className="absolute top-2 right-2 w-7 h-7 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition"
+            >
+                ✕
+            </button>
+        </div>
     );
 }

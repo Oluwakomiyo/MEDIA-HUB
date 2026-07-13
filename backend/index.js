@@ -125,6 +125,7 @@ setupDatabase().then((db) => {
     app.post('/api/projects/:id/upload', isAdmin, upload.array('images', 20), async (req, res) => {
         const projectId = req.params.id;
         const files = req.files;
+        const coverIndex = Number(req.body.coverIndex ?? 0);
 
         if (!files || files.length === 0) {
             return res.status(400).send('No files uploaded.');
@@ -138,7 +139,7 @@ setupDatabase().then((db) => {
                 });
             }
 
-            const uploadPromises = files.map(async (file) => {
+            const uploadPromises = files.map(async (file, index) => {
                 const baseName = path.parse(file.originalname).name
                     .replace(/[^a-zA-Z0-9_-]/g, '_');
 
@@ -180,8 +181,8 @@ setupDatabase().then((db) => {
 
                 // Save the file path to the database
                 return db.run(
-                    `INSERT INTO images (project_id, file_path) VALUES (?, ?)`,
-                    [projectId, fileName]
+                    `INSERT INTO images (project_id, file_path, is_cover) VALUES (?, ?, ?)`,
+                    [projectId, fileName, index === coverIndex ? 1 : 0]
                 );
             });
 
