@@ -252,30 +252,54 @@ export default function ProjectDetails() {
                         </div>
 
                         <div className="p-10">
-                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">Description</p>
-                            <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-lg max-w-4xl whitespace-pre-line mb-8">{project.description || "No description."}</p>
-                            <div className="inline-flex items-center gap-4 bg-slate-50 dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
-                                <Calendar className="text-blue-500" size={20} />
-                                <div><p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Completion</p><p className="text-slate-900 dark:text-white text-lg font-bold">{project.completion_date || "Not Set"}</p></div>
-                            </div>
-                        </div>
+                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">
+                                Description
+                            </p>
 
-                        {/* Inside your Project Details Card, below the description */}
-                        {/* DISCOVERY TAGS */}
-                        {project.tags && project.tags.trim() !== "" && (
-                            <div className="p-10">
-                                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">Discovery Tags</p>
-                                <div className="flex flex-wrap gap-2">
-                                    {project.tags.split(',').map((tag, index) => (
-                                        tag.trim() !== "" && (
-                                            <span key={index} className="px-4 py-2 bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-300 text-[11px] font-bold rounded-xl border border-blue-100 dark:border-blue-800">
-                                                #{tag.trim()}
-                                            </span>
-                                        )
-                                    ))}
+                            <p className="text-slate-500 dark:text-slate-400 font-medium leading-relaxed whitespace-pre-line mb-8">
+                                {project.description || "No description."}
+                            </p>
+
+                            <div className="inline-flex items-center gap-4 bg-slate-50 dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 mb-8">
+                                <Calendar className="text-blue-500" size={20} />
+                                <div>
+                                    <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                                        Completion
+                                    </p>
+                                    <p className="text-slate-900 dark:text-white text-lg font-bold tracking-wider">
+                                        {project.completion_date
+                                            ? (() => {
+                                                const d = new Date(project.completion_date);
+                                                return `${String(d.getDate()).padStart(2, "0")}-${String(
+                                                    d.getMonth() + 1
+                                                ).padStart(2, "0")}-${String(d.getFullYear())}`;
+                                            })()
+                                            : "Not Set"}
+                                    </p>
                                 </div>
                             </div>
-                        )}
+
+                            {project.tags && project.tags.trim() !== "" && (
+                                <>
+                                    <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">
+                                        Discovery Tags
+                                    </p>
+
+                                    <div className="flex flex-wrap gap-2">
+                                        {project.tags.split(",").map((tag, index) =>
+                                            tag.trim() !== "" ? (
+                                                <span
+                                                    key={index}
+                                                    className="px-4 py-2 bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-300 text-[11px] font-bold rounded-xl border border-blue-100 dark:border-blue-800"
+                                                >
+                                                    #{tag.trim()}
+                                                </span>
+                                            ) : null
+                                        )}
+                                    </div>
+                                </>
+                            )}
+                        </div>
                     </div>
 
                     {/* LARGE IMAGE GRID (3 COLUMNS) */}

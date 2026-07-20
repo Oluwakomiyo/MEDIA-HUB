@@ -46,7 +46,7 @@ export default function Home() {
     <div>
       <header className="mb-10">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-5">
-          {isAdmin ? "Enterprise Dashboard" : "Project Showcase"}
+          {isAdmin ? "Dashboard" : "Project Showcase"}
         </h1>
 
         {isAdmin ? (
@@ -55,19 +55,21 @@ export default function Home() {
           </p>
         ) : (
           <div className="bg-white dark:bg-slate-900 border p-4 rounded-[1rem] border-slate-200 dark:border-slate-800 mb-8 text-slate-600 dark:text-slate-300 space-y-2">
-            Welcome to our Integrated Project Repository. Centralizing the collective
-            built-environment intelligence of Consultants Collaborative Partnership.
-            This master portal unites our multidisciplinary teams of architects,
-            project managers, civil/structural engineers, MEPF specialists, and BIM
-            coordinators working seamlessly across our regional hubs in Lagos, Abuja,
-            and Kigali.
-            From initial schematic concepts and sustainable green building
-            certifications to structural documentation and lifecycle construction
-            management, this platform tracks our journey of delivering excellence
-            from inception to completion.
-            Explore our decades of expertise driving innovation in the
-            built-environment sector, organized by technical discipline, geographic
-            region, and specialized asset category.
+            <p className="text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+              Welcome to our Integrated Project Repository. Centralizing the collective
+              built-environment intelligence of Consultants Collaborative Partnership.
+              This master portal unites our multidisciplinary teams of architects,
+              project managers, civil/structural engineers, MEPF specialists, and BIM
+              coordinators working seamlessly across our regional hubs in Lagos, Abuja,
+              and Rwanda (Kigali).
+              From initial schematic concepts and sustainable green building
+              certifications to structural documentation and lifecycle construction
+              management, this platform tracks our journey of delivering excellence
+              from inception to completion.
+              Explore our decades of expertise driving innovation in the
+              built-environment sector, organized by technical discipline, geographic
+              region, and specialized asset category.
+            </p>
           </div>
         )}
       </header>
@@ -82,7 +84,7 @@ export default function Home() {
             color="bg-blue-50 dark:bg-blue-950/40"
           />
         </Link>
-        
+
         {/* Card 3: Featured Projects */}
         <Link href="/gallery?filter=featured" className="flex flex-col group h-full">
           <StatCard

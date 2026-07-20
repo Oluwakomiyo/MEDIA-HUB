@@ -58,7 +58,7 @@ export default function AddProject() {
 
     const [selectedFiles, setSelectedFiles] = useState([]);
 
-    const[hydrated, setHydrated] = useState(false);
+    const [hydrated, setHydrated] = useState(false);
 
     useEffect(() => {
         const saved = localStorage.getItem("addProjectForm");
@@ -456,7 +456,7 @@ export default function AddProject() {
 
                     {/* SECTION 5: DISCOVERY TAGS */}
                     <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] shadow-sm border border-slate-200 dark:border-slate-600">
-                        <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6">Discovery Tags</h3>
+                        <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6">Discovery Tags / BIM keywords</h3>
                         <div className="space-y-4">
                             <input
                                 type="text"
