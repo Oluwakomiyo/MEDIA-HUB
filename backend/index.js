@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
@@ -7,7 +9,12 @@ const sharp = require('sharp');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const JWT_SECRET = 'your_company_secret_key_123'; // Keep this private
+
+if (!process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is not set.');
+}
+
+const JWT_SECRET = process.env.JWT_SECRET;
 const setupDatabase = require('./database');
 
 const app = express();
@@ -55,7 +62,7 @@ setupDatabase().then((db) => {
             const validPass = await bcrypt.compare(password, user.password_hash);
             if (!validPass) return res.status(400).json({ error: "Invalid password" });
 
-            const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '24h' });
+            const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '2h' });
             res.json({ token, role: user.role });
         } catch (err) { res.status(500).json({ error: err.message }); }
     });
