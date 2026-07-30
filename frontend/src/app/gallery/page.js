@@ -129,7 +129,7 @@ function GalleryContent() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-4 md:p-8 text-slate-900 dark:text-white">
+        <div className="space-y-6 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
             <div className="max-w-7xl mx-auto">
                 <div className="mb-6">
                     <Link href="/" className="flex items-center text-blue-600 mb-1 hover:underline text-sm font-medium">

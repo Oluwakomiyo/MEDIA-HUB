@@ -4,7 +4,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     ArrowLeft, Trash2, Calendar, MapPin, Play, Star, X,
-    User, DollarSign, Briefcase, Landmark, Edit3, Plus, Upload, Save, RotateCcw, Award, Clock, ShieldCheck,
+    User, DollarSign, Briefcase, Landmark, Edit3, Plus, Upload, Save, RotateCcw, Award, Clock, ShieldCheck, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -26,7 +26,7 @@ export default function ProjectDetails() {
     const [loading, setLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false); // Controls the Popup
     const [editData, setEditData] = useState(null);    // Holds the form data
-    const [selectedImage, setSelectedImage] = useState(null);
+    const [selectedIndex, setSelectedIndex] = useState(null);
     const [showUpload, setShowUpload] = useState(false);
     const [newFiles, setNewFiles] = useState([]);
     const [uploading, setUploading] = useState(false);
@@ -73,6 +73,11 @@ export default function ProjectDetails() {
         fetchProject();
     }, [id]);
 
+    const selectedImage =
+        selectedIndex !== null
+            ? project?.images?.[selectedIndex]
+            : null;
+
     const handleEditTagKeyDown = (e) => {
         if (e.key === 'Enter' && editTagInput.trim()) {
             e.preventDefault();
@@ -87,6 +92,44 @@ export default function ProjectDetails() {
     const removeEditTag = (tagToRemove) => {
         setEditTagList(editTagList.filter(t => t !== tagToRemove));
     };
+
+    const showPrevious = () => {
+        if (selectedIndex === null) return;
+
+        setSelectedIndex(prev =>
+            prev === 0 ? project.images.length - 1 : prev - 1
+        );
+    };
+
+    const showNext = () => {
+        if (selectedIndex === null) return;
+
+        setSelectedIndex(prev =>
+            prev === project.images.length - 1 ? 0 : prev + 1
+        );
+    };
+
+    useEffect(() => {
+        if (selectedIndex === null) return;
+
+        const handleKeyDown = (e) => {
+            if (e.key === "ArrowLeft") {
+                showPrevious();
+            }
+
+            if (e.key === "ArrowRight") {
+                showNext();
+            }
+
+            if (e.key === "Escape") {
+                setSelectedIndex(null);
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [selectedIndex]);
 
     // 3. SAVE EDITS FUNCTION
     const handleUpdate = async (e) => {
@@ -193,7 +236,7 @@ export default function ProjectDetails() {
 
     return (
         <Suspense fallback={<div>Loading...</div>}>
-            <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-4 md:p-8 text-slate-900 dark:text-white">
+            <div className="space-y-6 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
                 <div className="max-w-6xl mx-auto">
 
                     {/* TOP NAVIGATION */}
@@ -321,8 +364,8 @@ export default function ProjectDetails() {
                         )}
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {project.images?.map(img => (
-                                <div key={img.id} onClick={() => setSelectedImage(img.file_path)} className="group h-40 bg-white dark:bg-slate-900 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all relative">
+                            {project.images?.map((img, index) => (
+                                <div key={img.id} onClick={() => setSelectedIndex(index)} className="group h-40 bg-white dark:bg-slate-900 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all relative">
                                     <img src={`${API_URL}/uploads/thumb_${img.file_path}`} className="w-full h-full object-cover group-hover:scale-110 transition-all duration-1000" />
                                     {isAdmin && (
                                         <button onClick={(e) => deleteImage(e, img.id)} className="absolute top-3 right-3 z-30 p-2 bg-red-600 text-white rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-300 transform hover:scale-110"><Trash2 size={18} /></button>
@@ -492,11 +535,55 @@ export default function ProjectDetails() {
                     </AnimatePresence>
 
                     {/* --- LIGHTBOX (IMAGE VIEWER) --- */}
-                    <AnimatePresence>
+                    <AnimatePresence mode="wait">
                         {selectedImage && (
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[2000] bg-slate-900/95 backdrop-blur-md flex items-center justify-center p-12" onClick={() => setSelectedImage(null)}>
-                                <button className="absolute top-8 right-8 text-white bg-white/10 p-4 rounded-full hover:bg-red-500 transition-all"><X size={32} /></button>
-                                <motion.img initial={{ scale: 0.9 }} animate={{ scale: 1 }} src={`${API_URL}/uploads/${selectedImage}`} className="max-w-full max-h-full rounded-2xl shadow-2xl object-contain" onClick={e => e.stopPropagation()} />
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="fixed inset-0 z-[2000] bg-slate-900/95 backdrop-blur-md flex items-center justify-center p-12"
+                                onClick={() => setSelectedIndex(null)}
+                            >
+                                {/* Close */}
+                                <button
+                                    onClick={() => setSelectedIndex(null)}
+                                    className="absolute top-8 right-8 text-white bg-white/10 p-4 rounded-full hover:bg-red-500 transition-colors"
+                                >
+                                    <X size={32} />
+                                </button>
+
+                                {/* Previous */}
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        showPrevious();
+                                    }}
+                                    className="absolute left-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-4 rounded-full transition-colors"
+                                >
+                                    <ChevronLeft size={36} />
+                                </button>
+
+                                {/* Next */}
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        showNext();
+                                    }}
+                                    className="absolute right-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-4 rounded-full transition-colors"
+                                >
+                                    <ChevronRight size={36} />
+                                </button>
+
+                                <motion.img
+                                    key={selectedImage.id}
+                                    src={`${API_URL}/uploads/${selectedImage.file_path}`}
+                                    initial={{ scale: 0.9, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    exit={{ scale: 0.9, opacity: 0 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="max-w-full max-h-full rounded-2xl shadow-2xl object-contain"
+                                    onClick={(e) => e.stopPropagation()}
+                                />
                             </motion.div>
                         )}
                     </AnimatePresence>

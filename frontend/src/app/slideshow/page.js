@@ -213,7 +213,7 @@ function SlideshowContent() {
   // --- RENDER MODE A: THE SELECTION DASHBOARD ---
   if (!isPlayingParam && !projectIdFilter) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-8 md:p-12 ">
+      <div className="space-y-6 bg-slate-50 dark:bg-slate-950">
         <div className="max-w-6xl mx-auto">
           <header className="mb-12">
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Presentation Portal</h1>

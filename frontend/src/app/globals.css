@@ -7,10 +7,10 @@
   --background-rgb: 248, 250, 252; /* Slate 50 */
 }
 
+html,
 body {
-  color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-rgb));
-  font-family: 'Inter', sans-serif; /* Professional, clean font */
+  margin: 0;
+  padding: 0;
 }
 
 /* Custom Scrollbar for a "Software" feel */

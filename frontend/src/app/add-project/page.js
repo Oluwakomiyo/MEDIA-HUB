@@ -272,7 +272,7 @@ export default function AddProject() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white p-6 md:p-12 text-slate-900">
+        <div className="space-y-6 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-slate-900">
             <div className="max-w-4xl mx-auto">
 
                 {/* HEADER */}

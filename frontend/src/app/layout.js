@@ -46,15 +46,14 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className}
-    bg-white dark:bg-slate-950
+    bg-slate-50 dark:bg-slate-950
     text-slate-900 dark:text-slate-100
-    transition-colors duration-300`}
-        suppressHydrationWarning
+    `} suppressHydrationWarning
       >
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           <div className="flex min-h-screen select-none">
             {/* SIDEBAR */}
-            <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col fixed h-full border-r border-slate-800">
+            <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col fixed h-full">
               <div className="p-6 select-none">
                 <h2 className="text-white text-xl font-bold tracking-tight flex items-center gap-2">
                   <div className="w-auto h-10 rounded-lg flex items-center justify-center text-xs"><img src="/ccplogo.png" alt="CCP Logo" className='h-20 w-auto'></img></div>
@@ -115,7 +114,7 @@ export default function RootLayout({ children }) {
             </aside>
 
             {/* MAIN CONTENT AREA */}
-            <main className="flex-1 ml-64 p-8 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+            <main className="flex-1 ml-64 p-8 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
               {children}
             </main>
           </div>
