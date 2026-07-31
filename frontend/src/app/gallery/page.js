@@ -201,10 +201,11 @@ function GalleryContent() {
 
                             {/* RESTORED: Visual Star Badge on the Card */}
                             <div className="absolute top-3 right-4 z-20 flex flex-col items-end gap-1.5">
-                                {project.is_featured === 1 && <MiniBadge color="bg-amber-500" icon={<Star size={10} fill="white" />} />}
-                                {project.is_award_winning === 1 && <MiniBadge color="bg-emerald-500" icon={<Award size={10} />} />}
-                                {project.is_landmark === 1 && <MiniBadge color="bg-purple-500" icon={<MapPin size={10} />} />}
-                                {project.is_premium === 1 && <MiniBadge color="bg-rose-500" icon={<ShieldCheck size={10} />} />}
+                                {project.is_featured === 1 && <MiniBadge color="bg-amber-500" label="Featured" icon={<Star size={10} fill="white" />} />}
+                                {project.is_award_winning === 1 && <MiniBadge color="bg-emerald-500" label="Award Winning" icon={<Award size={10} />} />}
+                                {project.is_landmark === 1 && <MiniBadge color="bg-purple-500" label="Landmark" icon={<MapPin size={10} />} />}
+                                {project.is_premium === 1 && <MiniBadge color="bg-rose-500" label="Premium" icon={<ShieldCheck size={10} />} />}
+                                {project.is_recently_completed === 1 && <MiniBadge color="bg-blue-500" label="Recent" icon={<Clock size={10} />} />}
                             </div>
 
                             {isAdmin && (
@@ -288,10 +289,36 @@ function FilterToggle({ label, active, onClick, icon, color }) {
     );
 }
 
-function MiniBadge({ color, icon }) {
+function MiniBadge({ color, icon, label }) {
     return (
-        <div className={`${color} text-white p-1.5 rounded-lg shadow-lg border border-white/20 animate-in zoom-in duration-300`}>
-            {icon}
+        <div className="group relative">
+            <div
+                className={`${color} w-6 h-6 rounded-full flex items-center justify-center text-white shadow-md cursor-pointer`}
+            >
+                {icon}
+            </div>
+
+            <div
+                className="
+                    absolute right-8 top-1/2 -translate-y-1/2
+                    whitespace-nowrap
+                    opacity-0 translate-x-2
+                    group-hover:opacity-100 group-hover:translate-x-0
+                    transition-all duration-200 ease-out
+                    pointer-events-none
+
+                    bg-white/90 dark:bg-slate-900/90
+                    backdrop-blur
+                    px-2 py-0.5
+                    rounded   
+                    text-[9px]
+                    font-bold
+                    uppercase
+                    text-slate-800 dark:text-slate-100
+                    shadow-md"
+            >
+                {label}
+            </div>
         </div>
     );
 }

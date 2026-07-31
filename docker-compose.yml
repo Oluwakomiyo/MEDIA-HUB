@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: aec-backend
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./backend/.env 
+    volumes:
+      # PERSISTENCE: Save database and images on the host machine
+      - ./backend/database.db:/app/database.db
+      - ./backend/uploads:/app/uploads
+    restart: unless-stopped
+    healthcheck:
+       test: ["CMD", "wget", "--spider", "http://localhost:5000/health"]
+       interval: 30s
+       timeout: 10s
+       retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # Change this to your public URL when deploying
+        - NEXT_PUBLIC_API_URL=http://localhost:5000
+    container_name: aec-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+networks:
+  default:
+    name: aec-network
