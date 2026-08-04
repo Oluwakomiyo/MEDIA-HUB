@@ -8,6 +8,16 @@ async function setupDatabase() {
         driver: sqlite3.Database
     });
 
+    await db.exec(`
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            role TEXT NOT NULL DEFAULT 'admin',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+
     // 1. CREATE PROJECTS TABLE
     await db.exec(`
         CREATE TABLE IF NOT EXISTS projects (
