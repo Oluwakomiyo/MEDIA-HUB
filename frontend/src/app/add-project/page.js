@@ -315,13 +315,12 @@ export default function AddProject() {
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <FormGroup label="Project Manager" icon={<User size={14} />}>
-                                <input required type="text" value={formData.project_manager} placeholder="Manager Name" className="form-input"
+                                <input type="text" value={formData.project_manager} placeholder="Manager Name" className="form-input"
                                     onChange={(e) => setFormData({ ...formData, project_manager: e.target.value })} />
                             </FormGroup>
 
                             <FormGroup label="Project Value" icon={<DollarSign size={14} />}>
                                 <input
-                                    required
                                     type="text"
                                     placeholder="e.g. 10,000,000"
                                     className="form-input"
@@ -335,7 +334,7 @@ export default function AddProject() {
                             </FormGroup>
 
                             <FormGroup label="Client Name">
-                                <input required type="text" value={formData.client_name} placeholder="Organization Name" className="form-input"
+                                <input type="text" value={formData.client_name} placeholder="Organization Name" className="form-input"
                                     onChange={(e) => setFormData({ ...formData, client_name: e.target.value })} />
                             </FormGroup>
 
@@ -353,7 +352,7 @@ export default function AddProject() {
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                             <FormGroup label="Site Location">
-                                <input type="text" value={formData.location} placeholder="City, State" className="form-input"
+                                <input required type="text" value={formData.location} placeholder="City, State" className="form-input"
                                     onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
                             </FormGroup>
 
