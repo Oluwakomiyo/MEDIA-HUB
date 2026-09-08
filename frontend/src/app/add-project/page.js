@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     Upload, ArrowLeft, CheckCircle2, Star,
@@ -12,6 +12,7 @@ import {
     useSensor,
     useSensors,
     closestCenter,
+    DragOverlay,
 } from "@dnd-kit/core";
 
 import {
@@ -32,6 +33,8 @@ export default function AddProject() {
     const [isDragging, setIsDragging] = useState(false);
     const [tagInput, setTagInput] = useState("");
     const [tagList, setTagList] = useState([]);
+    const [activeId, setActiveId] = useState(null);
+
 
     const categories = [
         'Residential', 'Commercial', 'Industrial', 'Healthcare',
@@ -88,7 +91,60 @@ export default function AddProject() {
         );
     }, [formData, tagList, tagInput, hydrated]);
 
-    const handleFiles = (files) => {
+    const createThumbnail = (file, maxSize = 500) => {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            const url = URL.createObjectURL(file);
+
+            img.onload = () => {
+                const scale = Math.min(
+                    maxSize / img.width,
+                    maxSize / img.height,
+                    1
+                );
+
+                const canvas = document.createElement("canvas");
+
+                canvas.width = Math.round(img.width * scale);
+                canvas.height = Math.round(img.height * scale);
+
+                const ctx = canvas.getContext("2d");
+
+                ctx.drawImage(
+                    img,
+                    0,
+                    0,
+                    canvas.width,
+                    canvas.height
+                );
+
+                canvas.toBlob(
+                    (blob) => {
+                        URL.revokeObjectURL(url);
+
+                        if (!blob) {
+                            reject(new Error("Could not create thumbnail"));
+                            return;
+                        }
+
+                        resolve(URL.createObjectURL(blob));
+                    },
+                    "image/jpeg",
+                    0.8
+                );
+            };
+
+            img.onerror = () => {
+                URL.revokeObjectURL(url);
+                reject(new Error("Could not load image"));
+            };
+
+            img.src = url;
+        });
+    };
+
+
+    const handleFiles = async (files) => {
         const incomingFiles = Array.from(files);
 
         if (incomingFiles.length + selectedFiles.length > 20) {
@@ -114,22 +170,43 @@ export default function AddProject() {
             alert("Only JPG, PNG, and WEBP images are allowed.");
         }
 
-        const arr = validFiles.map(file => ({
-            id: crypto.randomUUID(),
-            file,
-            preview: URL.createObjectURL(file),
-        }));
+        const arr = await Promise.all(
+            validFiles.map(async (file) => ({
+                id: crypto.randomUUID(),
+                file,
+                preview: await createThumbnail(file),
+            }))
+        );
 
         setSelectedFiles(prev => [...prev, ...arr]);
     };
 
+    const sortableIds = useMemo(
+        () => selectedFiles.map(item => item.id),
+        [selectedFiles]
+    );
+
+    const activeItem = useMemo(
+        () => selectedFiles.find(item => item.id === activeId) || null,
+        [selectedFiles, activeId]
+    );
+
+    const filesRef = useRef([]);
+
+    useEffect(() => {
+        filesRef.current = selectedFiles;
+    }, [selectedFiles]);
+
     useEffect(() => {
         return () => {
-            selectedFiles.forEach(item => {
-                URL.revokeObjectURL(item.preview);
+            filesRef.current.forEach((item) => {
+                if (item.preview) {
+                    URL.revokeObjectURL(item.preview);
+                }
             });
         };
-    }, [selectedFiles]);
+    }, []);
+
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -139,21 +216,47 @@ export default function AddProject() {
         })
     );
 
-    const handleDragEnd = ({ active, over }) => {
-        if (!over || active.id === over.id) return;
+    const handleDragEnd = useCallback(({ active, over }) => {
+        setActiveId(null);
 
-        setSelectedFiles((items) => {
-            const oldIndex = items.findIndex(
-                item => item.id === active.id
+        if (!over) return;
+        if (active.id === over.id) return;
+
+        setSelectedFiles((current) => {
+            const oldIndex = current.findIndex(
+                (item) => item.id === active.id
             );
 
-            const newIndex = items.findIndex(
-                item => item.id === over.id
+            const newIndex = current.findIndex(
+                (item) => item.id === over.id
             );
 
-            return arrayMove(items, oldIndex, newIndex);
+            console.log({
+                active: active.id,
+                over: over.id,
+                oldIndex,
+                newIndex,
+            });
+
+            if (oldIndex === -1 || newIndex === -1) {
+                return current;
+            }
+
+            return arrayMove(current, oldIndex, newIndex);
         });
-    };
+    }, []);
+
+
+    const handleDragStart = useCallback(({ active }) => {
+        setActiveId(active.id);
+    }, []);
+
+    const handleDragCancel = useCallback(() => {
+        setActiveId(null);
+    }, []);
+
+
+
 
     // 2. SUBMIT LOGIC
     const handleSubmit = async (e) => {
@@ -218,19 +321,9 @@ export default function AddProject() {
         }
     };
 
-    if (success) {
-        return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
-                <CheckCircle2 className="w-20 h-20 text-green-500 mb-4 animate-bounce" />
-                <h1 className="text-4xl font-black tracking-tighter">Project Published</h1>
-                <p className="text-slate-500 dark:text-slate-400 mt-2 text-lg">Opening project details...</p>
-            </div>
-        );
-    }
-
     // 3. REMOVE FILE PREVIEW LOGIC
-    const removeFile = (id) => {
-        setSelectedFiles(prev => {
+    const removeFile = useCallback((id) => {
+        setSelectedFiles((prev) => {
             const removed = prev.find(item => item.id === id);
 
             if (removed?.preview) {
@@ -239,9 +332,8 @@ export default function AddProject() {
 
             return prev.filter(item => item.id !== id);
         });
-    };
+    }, []);
 
-    // Helper to handle Enter key
     const handleKeyDown = (e) => {
         if (e.key === 'Enter' && tagInput.trim()) {
             e.preventDefault();
@@ -271,6 +363,18 @@ export default function AddProject() {
         });
     };
 
+    if (success) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
+                <CheckCircle2 className="w-20 h-20 text-green-500 mb-4 animate-bounce" />
+                <h1 className="text-4xl font-black tracking-tighter">Project Published</h1>
+                <p className="text-slate-500 dark:text-slate-400 mt-2 text-lg">Opening project details...</p>
+            </div>
+        );
+    }
+    
+    // Helper to handle Enter key
+    
     return (
         <div className="space-y-6 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-slate-900">
             <div className="max-w-4xl mx-auto">
@@ -379,8 +483,15 @@ export default function AddProject() {
   `}
                             onDragOver={(e) => {
                                 e.preventDefault();
-                                setIsDragging(true);
+
+                                if (
+                                    e.dataTransfer.types.includes("Files") &&
+                                    !isDragging
+                                ) {
+                                    setIsDragging(true);
+                                }
                             }}
+
                             onDragLeave={(e) => {
                                 if (!e.currentTarget.contains(e.relatedTarget)) {
                                     setIsDragging(false);
@@ -412,10 +523,12 @@ export default function AddProject() {
                             <DndContext
                                 sensors={sensors}
                                 collisionDetection={closestCenter}
+                                onDragStart={({ active }) => setActiveId(active.id)}
                                 onDragEnd={handleDragEnd}
+                                onDragCancel={() => setActiveId(null)}
                             >
                                 <SortableContext
-                                    items={selectedFiles.map(item => item.id)}
+                                    items={sortableIds}
                                     strategy={rectSortingStrategy}
                                 >
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 mb-8">
@@ -429,8 +542,22 @@ export default function AddProject() {
                                         ))}
                                     </div>
                                 </SortableContext>
+
+                                <DragOverlay dropAnimation={null}>
+                                    {activeItem && (
+                                        <div className="rounded-2xl overflow-hidden shadow-2xl">
+                                            <img
+                                                src={activeItem.preview}
+                                                alt=""
+                                                draggable={false}
+                                                className="w-full h-28 object-cover"
+                                            />
+                                        </div>
+                                    )}
+                                </DragOverlay>
                             </DndContext>
                         )}
+
                     </div>
 
                     <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
@@ -556,7 +683,11 @@ function StatusCheckbox({ label, icon, color, checked, onChange }) {
     );
 }
 
-function SortableImage({ item, index, removeFile }) {
+const SortableImage = React.memo(function SortableImage({
+    item,
+    index,
+    removeFile
+}) {
     const {
         attributes,
         listeners,
@@ -571,6 +702,7 @@ function SortableImage({ item, index, removeFile }) {
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
+        willChange: isDragging ? "transform" : undefined,
     };
 
     return (
@@ -583,13 +715,15 @@ function SortableImage({ item, index, removeFile }) {
                 border-slate-200 dark:border-slate-700
                 bg-slate-50 dark:bg-slate-800
                 cursor-grab active:cursor-grabbing
-                ${isDragging ? "z-50 shadow-2xl scale-105" : ""}
+                ${isDragging ? "z-50 opacity-50" : ""}
             `}
         >
             <img
                 src={item.preview}
                 alt=""
                 draggable={false}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-28 object-cover select-none"
             />
 
@@ -615,4 +749,4 @@ function SortableImage({ item, index, removeFile }) {
             </button>
         </div>
     );
-}
+});

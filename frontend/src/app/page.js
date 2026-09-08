@@ -45,38 +45,67 @@ export default function Home() {
   return (
     <div>
       <header className="mb-10">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-5">
-          {isAdmin ? "Dashboard" : "Project Showcase"}
-        </h1>
-
         {isAdmin ? (
-          <p className="text-slate-500 dark:text-slate-400">
-            Welcome back, Admin. Here is an overview of your media repository.
-          </p>
-        ) : (
-          <div className="bg-white dark:bg-slate-900 border p-4 rounded-[1rem] border-slate-200 dark:border-slate-800 mb-8 text-slate-600 dark:text-slate-300 space-y-2">
-            <p className="text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-              Welcome to our Integrated Project Repository. Centralizing the collective
-              built-environment intelligence of Consultants Collaborative Partnership.
-              This master portal unites our multidisciplinary teams of architects,
-              project managers, civil/structural engineers, MEPF specialists, and BIM
-              coordinators working seamlessly across our regional hubs in Lagos, Abuja,
-              and Rwanda (Kigali).
-              From initial schematic concepts and sustainable green building
-              certifications to structural documentation and lifecycle construction
-              management, this platform tracks our journey of delivering excellence
-              from inception to completion.
-              Explore our decades of expertise driving innovation in the
-              built-environment sector, organized by technical discipline, geographic
-              region, and specialized asset category.
+          <>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+              Dashboard
+            </h1>
+
+            <p className="mt-2 text-slate-500 dark:text-slate-400">
+              Welcome back, Admin. Here is an overview of your media repository.
             </p>
+          </>
+        ) : (
+          <div className="relative mb-8 overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-8 text-slate-600 shadow-sm shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 md:p-10">
+
+            {/* Decorative background */}
+            <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-blue-500/5 blur-3xl dark:bg-blue-400/5" />
+            <div className="absolute -bottom-24 left-1/3 h-64 w-64 rounded-full bg-cyan-400/5 blur-3xl dark:bg-cyan-400/5" />
+
+            {/* Right-side image */}
+            <div className="pointer-events-none absolute right-6 top-1/2 hidden -translate-y-1/2 md:block">
+              <img
+                src="/favicon.ico"
+                alt=""
+                className="h-56 w-56 object-contain opacity-95 lg:h-30 lg:w-50"
+              />
+            </div>
+
+            <div className="relative z-10 max-w-3xl">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+                Integrated Project Repository
+              </div>
+
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white ">
+                Explore Our
+                <span className="text-blue-600 dark:text-blue-400"> Project Portfolio.</span>
+              </h1>
+
+              <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-300 md:text-base">
+                Discover the collective built-environment intelligence of
+                Consultants Collaborative Partnership — from architecture and
+                engineering to project management, BIM and sustainable design.
+              </p>
+
+              <Link
+                href="/gallery"
+                className="mt-7 inline-flex items-center gap-2 rounded-xl bg-blue-500 dark:bg-blue-600 px-5 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-blue-600/20 transition-all duration-300 hover:-translate-y-1 hover:bg-blue-700 hover:shadow-xl"
+              >
+                Explore Projects
+                <ArrowRight size={15} />
+              </Link>
+            </div>
           </div>
+
         )}
       </header>
 
+
       <div className={`grid grid-cols-1 md:grid-cols-2 ${isAdmin ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-6 mb-12`}>
+
         {/* Card 1: Total Projects */}
-        <Link href="/gallery" className="flex flex-col group h-full">
+        <Link href="/gallery" className="flex flex-col group h-full animate-dashboard-card">
           <StatCard
             icon={<Folders className="text-blue-600" />}
             label="Total Projects"
@@ -86,7 +115,7 @@ export default function Home() {
         </Link>
 
         {/* Card 3: Featured Projects */}
-        <Link href="/gallery?filter=featured" className="flex flex-col group h-full">
+        <Link href="/gallery?filter=featured" className="flex flex-col group h-full animate-dashboard-card [animation-delay:100ms]">
           <StatCard
             icon={<Star className="text-amber-600" />}
             label="Featured Projects"
@@ -96,7 +125,7 @@ export default function Home() {
         </Link>
 
         {/* Card 2: Total Images */}
-        <Link href="/gallery" className="flex flex-col group h-full">
+        <Link href="/gallery" className="flex flex-col group h-full animate-dashboard-card [animation-delay:200ms]">
           <StatCard
             icon={<ImageIcon className="text-purple-600" />}
             label="Total Images"
@@ -107,7 +136,7 @@ export default function Home() {
 
         {/* Card 4: Storage Used */}
         {isAdmin && (
-          <div className="flex flex-col h-full">
+          <div className="flex flex-col h-full animate-dashboard-card [animation-delay:300ms]">
             <StatCard
               icon={<Database className="text-emerald-600" />}
               label="Storage Used"
@@ -118,9 +147,28 @@ export default function Home() {
         )}
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm p-8 mb-8 overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-[1.5rem] border border-slate-200 dark:border-slate-800 shadow-sm p-8 mb-8 overflow-hidden">
         <div className="max-h-75 overflow-y-auto custom-scrollbar p-8">
-          <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Portfolio Distribution</h3>
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 mb-2">
+                Analytics
+              </p>
+
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                Portfolio Distribution
+              </h3>
+
+              <p className="mt-1 text-sm text-slate-400">
+                Projects organized by discipline
+              </p>
+            </div>
+
+            <div className="hidden sm:flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/40">
+              <Folders size={18} className="text-blue-600" />
+            </div>
+          </div>
+
           <div className="space-y-2 flex-1 mb-0">
             {stats.categoryData?.length > 0 ? stats.categoryData.map((cat, i) => {
               // Logic: Calculate % based on total projects
@@ -135,7 +183,7 @@ export default function Home() {
                   {/* THE BAR */}
                   <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-blue-600 rounded-full transition-all duration-1000"
+                      className="h-full bg-gradient-to-r from-blue-600 to-indigo-500 rounded-full animate-bar-grow"
                       style={{ width: `${percentage}%` }}
                     />
                   </div>
@@ -202,7 +250,7 @@ export default function Home() {
       ) : (
         <div className="space-y-6">
           <div className="flex justify-between items-center px-2">
-            <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Recently Added Projects</h3>
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white">Recently Added Projects</h3>
             <Link href="/gallery" className="flex items-center gap-2 text-blue-600 font-bold text-xs hover:gap-3 transition-all">BROWSE ALL <ArrowRight size={14} /></Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -246,13 +294,23 @@ export default function Home() {
 
 function StatCard({ icon, label, value, color }) {
   return (
-    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[140px] transition-all group-hover:shadow-md">
-      <div className={`w-10 h-10 ${color} rounded-lg flex items-center justify-center mb-4 transition-transform group-hover:scale-110`}>
-        {icon}
-      </div>
-      <div>
-        <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">{label}</p>
-        <p className="text-2xl font-bold text-slate-900 dark:text-white">{value}</p>
+    <div className="group relative overflow-hidden bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-black/20">
+
+      {/* subtle hover glow */}
+      <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-slate-100 dark:bg-slate-800 opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-100" />
+
+      <div className="relative">
+        <div className={`w-11 h-11 ${color} rounded-xl flex items-center justify-center mb-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3`}>
+          {icon}
+        </div>
+
+        <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.18em]">
+          {label}
+        </p>
+
+        <p className="mt-1 text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+          {value}
+        </p>
       </div>
     </div>
   );
