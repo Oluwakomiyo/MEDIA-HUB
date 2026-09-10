@@ -254,37 +254,62 @@ export default function Home() {
             <Link href="/gallery" className="flex items-center gap-2 text-blue-600 font-bold text-xs hover:gap-3 transition-all">BROWSE ALL <ArrowRight size={14} /></Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {stats.highlights?.map((project) => (
-              <Link key={project.id} href={`/project/${project.id}?from=dashboard`} className="group bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-md transition-all duration-500">
-                <div className="relative aspect-[16/10] overflow-hidden cursor-pointer">
-                  {project.thumbnail ? (
-                    <img
-                      src={`${API_URL}/uploads/thumb_${project.thumbnail}`}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      alt={project.name}
-                      onError={(e) => {
-                        // If the thumbnail fails, try loading the original
-                        e.target.src = `${API_URL}/uploads/${project.thumbnail}`;
-                      }}
-                    />
-                  ) : (
-                    /* SHOW THIS IF PROJECT HAS NO IMAGES */
-                    <div className="flex items-center justify-center w-full h-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-sm">
-                      No image available for {project.name}
+            {stats.highlights?.length > 0 ? (
+              stats.highlights.map((project) => (
+                <Link
+                  key={project.id}
+                  href={`/project/${project.id}?from=dashboard`}
+                  className="group bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-md transition-all duration-500"
+                >
+                  <div className="relative aspect-[16/10] overflow-hidden cursor-pointer">
+                    {project.thumbnail ? (
+                      <img
+                        src={`${API_URL}/uploads/thumb_${project.thumbnail}`}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        alt={project.name}
+                        onError={(e) => {
+                          // If the thumbnail fails, try loading the original
+                          e.currentTarget.src = `${API_URL}/uploads/${project.thumbnail}`;
+                        }}
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center w-full h-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-sm text-center px-4">
+                        No image available for {project.name}
+                      </div>
+                    )}
+
+                    <div className="absolute top-3 left-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur px-2 py-0.5 rounded text-[9px] font-bold uppercase text-slate-800 dark:text-white">
+                      {project.category}
                     </div>
-                  )}
-
-                  <div className="absolute top-3 left-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur px-2 py-0.5 rounded text-[9px] font-bold uppercase text-slate-800 dark:text-white">
-                    {project.category}
                   </div>
+
+                  <div className="p-6">
+                    <h4 className="font-bold text-slate-900 dark:text-white text-lg group-hover:text-blue-600 transition-colors truncate">
+                      {project.name}
+                    </h4>
+
+                    <p className="text-slate-400 dark:text-slate-500 text-xs flex items-center gap-1 mt-1 font-medium">
+                      <MapPin size={12} />
+                      {project.location}
+                    </p>
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <div className="col-span-full flex flex-col items-center justify-center py-16 px-6 text-center bg-white dark:bg-slate-900 rounded-[1.5rem] border  border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                <div className="w-14 h-14 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 mb-4">
+                  <FolderOpen className="w-7 h-7 text-slate-400 dark:text-slate-500" />
                 </div>
 
-                <div className="p-6">
-                  <h4 className="font-bold text-slate-900 dark:text-white text-lg group-hover:text-blue-600 transition-colors truncate">{project.name}</h4>
-                  <p className="text-slate-400 dark:text-slate-500 text-xs flex items-center gap-1 mt-1 font-medium "><MapPin size={12} /> {project.location}</p>
-                </div>
-              </Link>
-            ))}
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                  No projects yet
+                </h3>
+
+                <p className="h-full flex items-center justify-center text-slate-300 dark:text-slate-600 italic text-sm text-center">
+                  Recently added projects will appear here.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}

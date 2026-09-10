@@ -32,6 +32,14 @@ services:
       - backend
     restart: unless-stopped
 
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: aec-cloudflared
+    restart: unless-stopped
+    command: tunnel run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}   
+
 networks:
   default:
-    name: aec-network
+    name: aec-network  

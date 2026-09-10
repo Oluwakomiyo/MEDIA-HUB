@@ -114,7 +114,18 @@ function SlideshowContent() {
     return () => clearInterval(intervalId);
   }, [isAutoPlaying, images, duration, isRandom]);
 
-  const handleExit = () => {
+  const handleExit = async () => {
+    setIsFocusMode(false);
+    setShowUI(true);
+    // Exit browser fullscreen first
+    if (document.fullscreenElement) {
+      try {
+        await document.exitFullscreen();
+      } catch (error) {
+        console.error("Error exiting fullscreen:", error);
+      }
+    }
+
     if (projectIdFilter) {
       // If we are in a single project slideshow, return to that project's details
       router.push(`/project/${projectIdFilter}`);
@@ -308,11 +319,15 @@ function SlideshowContent() {
   }
   if (images.length === 0) {
     return (
-      <div className="h-[90vh] rounded-[1rem] bg-white dark:bg-slate-950
-text-slate-900 dark:text-white flex flex-col items-center justify-center">
-        <h2 className="text-2xl font-bold mb-2">No Images Found</h2>
-        <p className="text-slate-400 dark:text-slate-400 mb-8"> This category doesn't contain any slideshow images yet. </p>
-        <button onClick={() => router.push("/slideshow")} className="px-6 py-3 bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors" > Return to Presentation Portal </button>
+      <div className="col-span-full h-[90vh] flex flex-col items-center justify-center px-6 text-center bg-white dark:bg-slate-900 rounded-[1.5rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div className="flex flex-col items-center justify-center gap-2">
+          <div className="w-14 h-14 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 mb-4">
+            <ImageIcon className="w-7 h-7 text-slate-400 dark:text-slate-500" />
+          </div>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">No Images Found</h2>
+          <p className="h-full flex items-center justify-center text-slate-300 dark:text-slate-600 italic text-sm text-center"> This category doesn't contain any slideshow images yet. </p>
+          <button onClick={() => router.push("/slideshow")} className="px-6 py-3 bg-blue-500 rounded-xl hover:bg-blue-600 transition-colors" > Return to Presentation Portal </button>
+        </div>
       </div>);
   }
 
