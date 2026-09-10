@@ -25,7 +25,7 @@ cd SIWES-PROJECT
 
 ### 2. Setup Backend (Server)
 ```bash
-cd server
+cd backend
 npm install
 # Create the uploads folder
 mkdir uploads
@@ -35,7 +35,7 @@ npm run dev
 ```
 ### 3. Setup Frontend (Client)
 ```bash
-cd ../client
+cd ../frontend
 npm install
 # Start the application
 npm run dev
