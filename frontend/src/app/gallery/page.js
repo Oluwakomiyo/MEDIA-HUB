@@ -2,7 +2,7 @@
 import { useEffect, useState, Suspense } from 'react';
 import {
     ArrowLeft, Search, SlidersHorizontal, Star, // Ensure Star is here
-    MapPin, Trash2, ChevronDown, X, Award, Clock, ShieldCheck
+    MapPin, Trash2, ChevronDown, X, Award, Clock, ShieldCheck, FolderOpen
 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -196,71 +196,103 @@ function GalleryContent() {
 
                 {/* PROJECT GRID */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredProjects.map((project) => (
-                        <div key={project.id} className="group bg-white dark:bg-slate-900 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all relative">
-
-                            {/* RESTORED: Visual Star Badge on the Card */}
-                            <div className="absolute top-3 right-4 z-20 flex flex-col items-end gap-1.5">
-                                {project.is_featured === 1 && <MiniBadge color="bg-amber-500" label="Featured" icon={<Star size={10} fill="white" />} />}
-                                {project.is_award_winning === 1 && <MiniBadge color="bg-emerald-500" label="Award Winning" icon={<Award size={10} />} />}
-                                {project.is_landmark === 1 && <MiniBadge color="bg-purple-500" label="Landmark" icon={<MapPin size={10} />} />}
-                                {project.is_premium === 1 && <MiniBadge color="bg-rose-500" label="Premium" icon={<ShieldCheck size={10} />} />}
-                                {project.is_recently_completed === 1 && <MiniBadge color="bg-blue-500" label="Recent" icon={<Clock size={10} />} />}
-                            </div>
-
-                            {isAdmin && (
-                                <button
-                                    onClick={() => deleteProject(project.id)}
-                                    className="absolute top-3 right-3 z-30 p-2 bg-red-600 text-white rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-300 transform hover:scale-110"
-                                    title="Delete Project"
-                                >
-                                    <Trash2 size={16} />
-                                </button>
-                            )}
-
-                            <Link href={`/project/${project.id}`}>
-                                <div className="relative aspect-[16/10] overflow-hidden cursor-pointer">
-                                    {project.cover_image ? (
-                                        <img
-                                            src={`${API_URL}/uploads/thumb_${project.cover_image}`}
-                                            alt={project.name}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                        />
-                                    ) : (
-                                        <div className="flex items-center justify-center w-full h-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-sm">
-                                            No image available for {project.name}
-                                        </div>
-                                    )}
-                                    <div className="absolute top-3 left-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur px-2 py-0.5 rounded text-[9px] font-bold uppercase text-slate-800 dark:text-slate-100">
-                                        {project.category}
-                                    </div>
+                    {projects?.length === 0 ? (
+                        <div className="col-span-full h-[90vh] flex flex-col items-center justify-center px-6 text-center bg-white dark:bg-slate-900 rounded-[1.5rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                            <div className="flex flex-col items-center justify-center gap-2">
+                                <div className="w-14 h-14 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 mb-4">
+                                    <FolderOpen className="w-7 h-7 text-slate-400 dark:text-slate-500" />
                                 </div>
-                            </Link>
 
-                            <div className="p-4">
-                                <h3 className="font-bold text-slate-900 dark:text-white text-base mb-0.5">{project.name}</h3>
-                                <p className="text-slate-500 dark:text-slate-400 text-xs mb-3 flex items-center gap-1"><MapPin size={12} /> {project.location}</p>
-                                {/* Tiny Tag Previews */}
-                                {project.tags && (
-                                    <div className="flex flex-wrap gap-1 mb-4">
-                                        {project.tags.split(',').slice(0, 3).map((tag, i) => (
-                                            <span key={i} className="text-[9px] font-bold text-slate-400 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded uppercase tracking-tighter">
-                                                {tag.trim()}
-                                            </span>
-                                        ))}
-                                        {project.tags.split(',').length > 3 && (
-                                            <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500">+{project.tags.split(',').length - 3} more</span>
-                                        )}
-                                    </div>
-                                )}
-                                <Link href={`/project/${project.id}`}>
-                                    <button className="w-full py-2 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-xs font-bold">
-                                        View Details
-                                    </button>
-                                </Link>
+                                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                                    No projects found
+                                </h3>
+
+                                <p className="h-full flex items-center justify-center text-slate-300 dark:text-slate-600 italic text-sm text-center">
+                                    Try adding projects to your gallery.
+                                </p>
                             </div>
                         </div>
-                    ))}
+                    ) : filteredProjects?.length === 0 ? (
+                        <div className="col-span-full flex flex-col items-center justify-center py-16 px-6 text-center bg-white dark:bg-slate-900 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
+                            <div className="w-14 h-14 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 mb-4">
+                                <Search className="w-7 h-7 text-slate-400 dark:text-slate-500" />
+                            </div>
+
+                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                                No projects found
+                            </h3>
+
+                            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 max-w-sm">
+                                We couldn't find any projects matching your search. Try a different search term.
+                            </p>
+                        </div>
+                    ) : (
+                        filteredProjects.map((project) => (
+                            <div key={project.id} className="group bg-white dark:bg-slate-900 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all relative">
+
+                                {/* RESTORED: Visual Star Badge on the Card */}
+                                <div className="absolute top-3 right-4 z-20 flex flex-col items-end gap-1.5">
+                                    {project.is_featured === 1 && <MiniBadge color="bg-amber-500" label="Featured" icon={<Star size={10} fill="white" />} />}
+                                    {project.is_award_winning === 1 && <MiniBadge color="bg-emerald-500" label="Award Winning" icon={<Award size={10} />} />}
+                                    {project.is_landmark === 1 && <MiniBadge color="bg-purple-500" label="Landmark" icon={<MapPin size={10} />} />}
+                                    {project.is_premium === 1 && <MiniBadge color="bg-rose-500" label="Premium" icon={<ShieldCheck size={10} />} />}
+                                    {project.is_recently_completed === 1 && <MiniBadge color="bg-blue-500" label="Recent" icon={<Clock size={10} />} />}
+                                </div>
+
+                                {isAdmin && (
+                                    <button
+                                        onClick={() => deleteProject(project.id)}
+                                        className="absolute top-3 right-3 z-30 p-2 bg-red-600 text-white rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-300 transform hover:scale-110"
+                                        title="Delete Project"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                )}
+
+                                <Link href={`/project/${project.id}`}>
+                                    <div className="relative aspect-[16/10] overflow-hidden cursor-pointer">
+                                        {project.cover_image ? (
+                                            <img
+                                                src={`${API_URL}/uploads/thumb_${project.cover_image}`}
+                                                alt={project.name}
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                            />
+                                        ) : (
+                                            <div className="flex items-center justify-center w-full h-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-sm">
+                                                No image available for {project.name}
+                                            </div>
+                                        )}
+                                        <div className="absolute top-3 left-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur px-2 py-0.5 rounded text-[9px] font-bold uppercase text-slate-800 dark:text-slate-100">
+                                            {project.category}
+                                        </div>
+                                    </div>
+                                </Link>
+
+                                <div className="p-4">
+                                    <h3 className="font-bold text-slate-900 dark:text-white text-base mb-0.5">{project.name}</h3>
+                                    <p className="text-slate-500 dark:text-slate-400 text-xs mb-3 flex items-center gap-1"><MapPin size={12} /> {project.location}</p>
+                                    {/* Tiny Tag Previews */}
+                                    {project.tags && (
+                                        <div className="flex flex-wrap gap-1 mb-4">
+                                            {project.tags.split(',').slice(0, 3).map((tag, i) => (
+                                                <span key={i} className="text-[9px] font-bold text-slate-400 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded uppercase tracking-tighter">
+                                                    {tag.trim()}
+                                                </span>
+                                            ))}
+                                            {project.tags.split(',').length > 3 && (
+                                                <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500">+{project.tags.split(',').length - 3} more</span>
+                                            )}
+                                        </div>
+                                    )}
+                                    <Link href={`/project/${project.id}`}>
+                                        <button className="w-full py-2 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-xs font-bold">
+                                            View Details
+                                        </button>
+                                    </Link>
+                                </div>
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
         </div>

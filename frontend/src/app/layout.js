@@ -55,10 +55,10 @@ export default function RootLayout({ children }) {
             {/* SIDEBAR */}
             <aside className="w-56 bg-slate-900 text-slate-300 flex flex-col fixed h-full">
               <div className="p-6 select-none mt-3">
-                <h2 className="text-white text-xl font-bold tracking-tight flex items-center gap-2">
+                <h2 className="text-white text-xl font-bold tracking-tight flex items-center">
                   <div className="w-auto h-10 rounded-lg flex items-center justify-center text-xs flex-shrink-0"><img src="/ccplogo.png" alt="CCP Logo" className='h-20 w-auto'></img></div>
                   <span className="text-lg font-bold tracking-wider text-white text-center leading-tight flex-shrink-0">
-                    CCP MEDIA <br />HUB
+                    MEDIA <br />HUB
                   </span>
                 </h2>
               </div>
