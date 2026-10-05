@@ -1,6 +1,6 @@
-# AEC Media Hub & Cinematic Slideshow System
+# Media Hub & Cinematic Slideshow System
 
-A modern, full-stack project repository and digital showcase system designed for Architecture, Engineering, and Construction firms. This system allows for centralized project management, high-resolution media organization, and cinematic "Kiosk Mode" presentations.
+A modern, full-stack project repository and digital showcase system designed for general use. This system allows for centralized project management, high-resolution media organization, and cinematic "Kiosk Mode" presentations.
 
 ## Tech Stack
 - **Frontend:** Next.js, Tailwind CSS, Framer Motion, Lucide Icons
@@ -19,13 +19,13 @@ A modern, full-stack project repository and digital showcase system designed for
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/your-username/aec-media-hub.git
-cd SIWES-PROJECT
+git clone https://github.com/Oluwakomiyo/MEDIA-HUB.git
+cd MEDIA-HUB
 ```
 
 ### 2. Setup Backend (Server)
 ```bash
-cd server
+cd backend
 npm install
 # Create the uploads folder
 mkdir uploads
@@ -35,7 +35,7 @@ npm run dev
 ```
 ### 3. Setup Frontend (Client)
 ```bash
-cd ../client
+cd ../frontend
 npm install
 # Start the application
 npm run dev
