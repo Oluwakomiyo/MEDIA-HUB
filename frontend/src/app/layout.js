@@ -56,7 +56,7 @@ export default function RootLayout({ children }) {
             <aside className="w-56 bg-slate-900 text-slate-300 flex flex-col fixed h-full">
               <div className="p-6 select-none mt-3">
                 <h2 className="text-white text-xl font-bold tracking-tight flex items-center">
-                  <div className="w-auto h-10 rounded-lg flex items-center justify-center text-xs flex-shrink-0"><img src="/ccplogo.png" alt="CCP Logo" className='h-20 w-auto'></img></div>
+                  <div className="w-auto h-10 rounded-lg flex items-center justify-center text-xs flex-shrink-0"><img src="/logo.png" alt="Contoso Logo" className='h-20 w-auto mr-2'></img></div>
                   <span className="text-lg font-bold tracking-wider text-white text-center leading-tight flex-shrink-0">
                     MEDIA <br />HUB
                   </span>
@@ -108,7 +108,7 @@ export default function RootLayout({ children }) {
               </div>
               <footer className="mt-auto p-6 border-t border-slate-200 dark:border-slate-800">
                 <p className="text-[10px] text-slate-500 text-center">
-                  &copy; {new Date().getFullYear()} CCP Project Gallery. All rights reserved.
+                  &copy; {new Date().getFullYear()} Contoso Family. All rights reserved.
                 </p>
               </footer>
             </aside>

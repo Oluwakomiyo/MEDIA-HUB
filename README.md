@@ -1,6 +1,6 @@
 # Media Hub & Cinematic Slideshow System
 
-A modern, full-stack project repository and digital showcase system designed for general use. This system allows for centralized project management, high-resolution media organization, and cinematic "Kiosk Mode" presentations.
+A modern, full-stack project repository and digital showcase system designed for Architecture, Engineering, and Construction firms. This system allows for centralized project management, high-resolution media organization, and cinematic "Kiosk Mode" presentations.
 
 ## Tech Stack
 - **Frontend:** Next.js, Tailwind CSS, Framer Motion, Lucide Icons

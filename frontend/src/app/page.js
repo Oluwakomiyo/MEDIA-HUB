@@ -83,8 +83,8 @@ export default function Home() {
               </h1>
 
               <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-300 md:text-base">
-                Discover the collective built-environment intelligence of
-                Consultants Collaborative Partnership — from architecture and
+                Discover the collective built-environment intelligence of the
+                Contoso Family — from architecture and
                 engineering to project management, BIM and sustainable design.
               </p>
 
